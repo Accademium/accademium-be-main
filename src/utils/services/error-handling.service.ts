@@ -13,7 +13,8 @@ export class ErrorHandlingService {
      * @param error 
      * @param context 
      */
-    handleError(error: Error, context: string): void {
+    handleError(error: Error, context: string): void 
+    {
         if (error instanceof AwsException) 
         {
             this.logger.error(`[AWS:${error.awsErrorCode}] ${error.message} in ${context}`, 

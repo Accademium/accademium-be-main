@@ -12,7 +12,8 @@ import { CognitoClientModule } from 'src/aws/cognito/cognito-client.module';
   providers: [
     AuthenticationService,
     JwtStrategy,
-    RefreshJwtStrategy,],
+    RefreshJwtStrategy,
+  ],
   imports: [
     JwtModule.register({
       secret: `${process.env.jwt_secret}`,

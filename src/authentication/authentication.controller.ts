@@ -24,8 +24,9 @@ export class AuthenticationController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async registerStudent(@Body() registerDto: RegistrationRequest): Promise<string> {
-    console.log(registerDto);
+  async registerStudent(
+    @Body() registerDto: RegistrationRequest
+  ): Promise<string> {
     await this.authService.registerUser(registerDto);
     return 'Student registered successfully. Please check your email for verification.';
   }
@@ -35,7 +36,6 @@ export class AuthenticationController {
   async login(
     @Body() loginDto: LoginRequest
   ): Promise<{ token: string }> {
-    console.log(loginDto);
     const token = await this.authService.loginUser(loginDto);
     return { token };
   }
