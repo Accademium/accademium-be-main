@@ -4,7 +4,14 @@ import { Injectable } from '@nestjs/common';
 import { CognitoService } from '../aws/cognito/cognito-client.service';
 import { JwtService } from '@nestjs/jwt';
 import { generateRandomPassword } from '../utils/passport/randomPasswordGenerator';
-import { ChangePasswordRequest, CreateB2BUserRequest, LoginRequest, RegistrationRequest, VerifyUserRequest } from 'src/modules/user/dto/userAuthRequest';
+import { 
+  ChangePasswordRequest, 
+  CreateB2BUserRequest, 
+  LoginRequest, 
+  RegistrationRequest, 
+  VerifyUserRequest 
+} from 'src/modules/user/dto/user.auth.dto';
+import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -21,7 +28,10 @@ export class AuthenticationService {
     registerDto: RegistrationRequest
   ): Promise<void> {
     await this.cognitoService.createStudent(registerDto);
-    await this.cognitoService.adminAddUserToGroup('StudentGroup', registerDto.email);
+    await this.cognitoService.adminAddUserToGroup({
+      userGroup: 'StudentGroup', 
+      email: registerDto.email
+    });
   }
 
   /**
@@ -33,8 +43,15 @@ export class AuthenticationService {
     createB2BUser: CreateB2BUserRequest
   ): Promise<string> {
     const tempPassword = generateRandomPassword();
-    await this.cognitoService.adminCreateUser(tempPassword, createB2BUser.email, createB2BUser.organisationId);
-    await this.cognitoService.adminAddUserToGroup(createB2BUser.role, createB2BUser.email);
+    await this.cognitoService.adminCreateUser({
+      tempPassword: tempPassword, 
+      email: createB2BUser.email, 
+      organisationId: createB2BUser.organisationId
+    });
+    await this.cognitoService.adminAddUserToGroup({
+      userGroup: createB2BUser.userGroup, 
+      email: createB2BUser.email
+    });
     return tempPassword;
   }
 
@@ -72,7 +89,7 @@ export class AuthenticationService {
   async verifyUser(
     verifyDto: VerifyUserRequest
   ): Promise<void> {
-    await this.cognitoService.confirmSignUp(verifyDto.email, verifyDto.code);
+    await this.cognitoService.confirmSignUp(verifyDto);
   }
 
   /**
@@ -87,11 +104,11 @@ export class AuthenticationService {
 
   /**
    * Changes the initial temporary password for a user after first login.
-   * @param email - The user's email address.
-   * @param session - The session string from the authentication response.
-   * @param newPassword - The new password to be set.
+   * @param changeInitialPasswordRequest {@link ChangeInitialPasswordRequest} - Data object, which contains the user's email address, session authentication response and the new password to be set.
    */
-  async changeInitialPassword(email: string, session: string, newPassword: string): Promise<void> {
-    await this.cognitoService.respondToNewPasswordChallenge(email, session, newPassword);
+  async changeInitialPassword(
+    changeInitialPasswordRequest: ChangeInitialPasswordRequest
+  ): Promise<void> {
+    await this.cognitoService.respondToNewPasswordChallenge(changeInitialPasswordRequest);
   }
 }

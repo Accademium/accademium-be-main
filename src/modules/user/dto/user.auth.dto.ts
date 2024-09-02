@@ -25,7 +25,7 @@ export class CreateB2BUserRequest {
   organisationId: string;
 
   @IsString()
-  role: string;
+  userGroup: string;
 }
 
 export class LoginRequest {
@@ -54,5 +54,3 @@ export class ChangePasswordRequest {
   @IsString()
   newPassword: string;
 }
-
-// cognitoAccessToken: string, currentPassword: string, newPassword: string

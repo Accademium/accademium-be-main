@@ -18,11 +18,20 @@ import {
     ChangePasswordCommand,
   } from '@aws-sdk/client-cognito-identity-provider';
 import { AwsConfigService } from '../../config/aws-config.service';
-import { ChangePasswordRequest, LoginRequest, RegistrationRequest } from 'src/modules/user/dto/userAuthRequest';
+import { 
+    ChangePasswordRequest, 
+    LoginRequest, 
+    RegistrationRequest
+} from 'src/modules/user/dto/user.auth.dto';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
 import { CognitoErrorMessage } from '../enums/aws-error-message.enum';
 import { AwsException } from 'src/utils/exceptions/aws.exception';
-import { AccademiumException } from 'src/utils/exceptions/accademium.exception';
+import { VerifyUserRequest } from 'src/modules/user/dto/user.auth.dto';
+import { 
+    ChangeInitialPasswordRequest, 
+    AdminCreateUserRequest,
+    AdminAddUserToGroupRequest
+} from 'src/modules/user/dto/user.cognito.dto';
   
 @Injectable()
 export class CognitoService {
@@ -46,10 +55,12 @@ export class CognitoService {
 
     /**
      * Registers a new student user in Cognito with the provided registration details.
-     * @param registerDto - An object containing the registration data, including email, password, and organization ID.
+     * @param registerDto  {@link RegistrationRequest} - An object containing the registration data, including email, password, and organization ID.
      * @throws {AwsException} If the signup process fails.
      */
-    async createStudent(registerDto: RegistrationRequest) {
+    async createStudent(
+        registerDto: RegistrationRequest
+    ) {
         try {
             return await this.cognitoClient.send(
                 new SignUpCommand({
@@ -73,29 +84,29 @@ export class CognitoService {
   
     /**
      * Creates a new B2B user in Cognito with a temporary password.
-     * @param tempPassword - The temporary password assigned to the user.
-     * @param email - The email address of the new user.
-     * @param organisationId - The organization ID associated with the user.
+     * @param adminCreateUserRequest {@link AdminCreateUserRequest} - Data object containing tempPassword, email, and organisationId.
      * @throws {AwsException} If the user creation fails.
      */
-    async adminCreateUser(tempPassword: string, email: string, organisationId: string) {
-        this.logger.log(`Creating B2B user with email: ${email}`);
+    async adminCreateUser(
+        adminCreateUserRequest: AdminCreateUserRequest
+    ) {
+        this.logger.log(`Creating B2B user with email: ${adminCreateUserRequest.email}`);
         try {
             return await this.cognitoClient.send(
                 new AdminCreateUserCommand({
                     UserPoolId: this.config.userPoolId,
-                    Username: email,
+                    Username: adminCreateUserRequest.email,
                     UserAttributes: [
-                        { Name: 'email', Value: email },
-                        { Name: 'custom:organisationId', Value: organisationId },
+                        { Name: 'email', Value: adminCreateUserRequest.email },
+                        { Name: 'custom:organisationId', Value: adminCreateUserRequest.organisationId },
                     ],
-                    TemporaryPassword: tempPassword,
+                    TemporaryPassword: adminCreateUserRequest.tempPassword,
                 }),
             );
         } catch (error) {
             this.handleCognitoError(
                 error, 
-                `Failed to create B2B-user with email = ${email}`, 
+                `Failed to create B2B-user with email = ${adminCreateUserRequest.email}`, 
                 CognitoErrorMessage.COGNITO_CREATE_USER_FAILED
             );
         }
@@ -103,35 +114,39 @@ export class CognitoService {
   
     /**
      * Adds a user to a specified Cognito group.
-     * @param userGroup - The group name to which the user should be added.
-     * @param email - The email of the user to be added to the group.
+     * @param adminAddUserToGroupRequest {@link AdminAddUserToGroupRequest} - Data object containing userGroup and email.
      * @throws {AwsException} If adding the user to the group fails.
      */
-    async adminAddUserToGroup(userGroup: string, email: string) {
+    async adminAddUserToGroup(
+        adminAddUserToGroupRequest: AdminAddUserToGroupRequest
+    ) {
         try {
             return await this.cognitoClient.send(
                 new AdminAddUserToGroupCommand({
                     UserPoolId: this.config.userPoolId,
-                    GroupName: userGroup,
-                    Username: email,
+                    GroupName: adminAddUserToGroupRequest.userGroup,
+                    Username: adminAddUserToGroupRequest.email,
                 }),
             );
         } catch (error) {
             this.handleCognitoError(
                 error, 
-                `Failed to add ${email} to a group`, 
+                `Failed to add ${adminAddUserToGroupRequest.email} to a group`, 
                 CognitoErrorMessage.COGNITO_ADD_USER_TO_GROUP_FAILED
             );
         }
     }
+
     /**
      * Initiates an authentication request for a user with provided credentials.
-     * @param loginDto - Contains user credentials such as email and password.
+     * @param loginDto  {@link LoginRequest} - Contains user credentials such as email and password.
      * @returns The authentication response, including tokens or challenges.
      * @throws {AwsException} If the authentication fails.
      * @throws {AccademiumException} If the challenge is unsupported.
      */
-    async initiateAuth(loginDto: LoginRequest) {
+    async initiateAuth(
+        loginDto: LoginRequest
+    ) {
         let authResponse: any;
         try {
             authResponse = await this.cognitoClient.send(
@@ -170,23 +185,24 @@ export class CognitoService {
   
     /**
      * Confirms the sign-up of a user using the provided confirmation code.
-     * @param email - The email of the user whose sign-up needs to be confirmed.
-     * @param code - The confirmation code sent to the user.
+     * @param verifyDto {@link VerifyUserRequest} - Data object which contains the email of the user whose sign-up needs to be confirmed and the confirmation code sent to the user.
      * @throws {AwsException} If confirmation of the sign-up fails.
      */
-    async confirmSignUp(email: string, code: string) {
+    async confirmSignUp(
+        verifyDto: VerifyUserRequest
+    ) {
         try {
             return await this.cognitoClient.send(
                 new ConfirmSignUpCommand({
                     ClientId: this.config.clientId,
-                    Username: email,
-                    ConfirmationCode: code,
+                    Username: verifyDto.email,
+                    ConfirmationCode: verifyDto.code,
                 }),
             );
         } catch (error) {
             this.handleCognitoError(
                 error, 
-                `Failed to validate signup code for user ${email}`, 
+                `Failed to validate signup code for user ${verifyDto.email}`, 
                 CognitoErrorMessage.COGNITO_CONFIRM_SIGNUP_FAILED
             );
         }
@@ -194,10 +210,12 @@ export class CognitoService {
   
     /**
      * Retrieves information about a specific user from Cognito.
-     * @param email - The email of the user to retrieve.
+     * @param email {@link string} - The email of the user to retrieve.
      * @throws {AwsException} If retrieving the user information fails.
      */
-    async adminGetUser(email: string) {
+    async adminGetUser(
+        email: string
+    ) {
         try {
             return await this.cognitoClient.send(
                 new AdminGetUserCommand({
@@ -216,10 +234,12 @@ export class CognitoService {
   
     /**
      * Deletes a user from the Cognito User Pool.
-     * @param email - The email of the user to be deleted.
+     * @param email {@link string} - The email of the user to be deleted.
      * @throws {AwsException} If the user deletion fails.
      */
-    async adminDeleteUser(email: string) {
+    async adminDeleteUser(
+        email: string
+    ) {
         try {
             return await this.cognitoClient.send(
                 new AdminDeleteUserCommand({
@@ -238,29 +258,29 @@ export class CognitoService {
   
     /**
      * Completes the new password challenge for a user when required during the authentication flow.
-     * @param email - The email of the user.
-     * @param session - The session token from the authentication response.
-     * @param newPassword - The new password set by the user.
+     * @param changeInitialPasswordRequest {@link ChangeInitialPasswordRequest} - Data object, which contains the user's email address, session authentication response and the new password to be set.
      * @throws {AwsException} If completing the new password challenge fails.
      */
-    async respondToNewPasswordChallenge(email: string, session: string, newPassword: string) {
+    async respondToNewPasswordChallenge(
+        changeInitialPasswordRequest: ChangeInitialPasswordRequest
+    ) {
         try {
             return await this.cognitoClient.send(
                 new AdminRespondToAuthChallengeCommand({
                     ChallengeName: 'NEW_PASSWORD_REQUIRED',
                     ClientId: this.config.clientId,
                     UserPoolId: this.config.userPoolId,
-                    Session: session,
+                    Session: changeInitialPasswordRequest.session,
                     ChallengeResponses: {
-                        USERNAME: email,
-                        NEW_PASSWORD: newPassword,
+                        USERNAME: changeInitialPasswordRequest.email,
+                        NEW_PASSWORD: changeInitialPasswordRequest.newPassword,
                     },
                 }),
             );
         } catch (error) {
             this.handleCognitoError(
                 error, 
-                `Failed to complete new password challenge for user ${email}`,
+                `Failed to complete new password challenge for user ${changeInitialPasswordRequest.email}`,
                 CognitoErrorMessage.COGNITO_NEW_PASSWORD_CHALLENGE_FAILED,
             );
         }

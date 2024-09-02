@@ -7,7 +7,13 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
-import { RegistrationRequest, LoginRequest, VerifyUserRequest, ChangePasswordRequest } from 'src/modules/user/dto/userAuthRequest';
+import { 
+  RegistrationRequest, 
+  LoginRequest, 
+  VerifyUserRequest, 
+  ChangePasswordRequest
+} from 'src/modules/user/dto/user.auth.dto';
+import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
 
 @Controller('api/v1/')
 export class AuthenticationController {
@@ -61,7 +67,6 @@ export class AuthenticationController {
   async verify(
     @Body() verifyDto: VerifyUserRequest
   ): Promise<string> {
-    console.log(verifyDto);
     await this.authService.verifyUser(verifyDto);
     return 'User verified successfully.';
   }
@@ -81,7 +86,7 @@ export class AuthenticationController {
     console.log(registrationDto);
     const tempPassword = await this.authService.createB2BUser({
       ...registrationDto,
-      role: 'B2BAdminGroup',
+      userGroup: 'B2BAdminGroup',
     });
     return `B2B Admin created successfully with temporary password: ${tempPassword}`;
   }
@@ -101,7 +106,7 @@ export class AuthenticationController {
     console.log(registrationDto);
     const tempPassword = await this.authService.createB2BUser({
       ...registrationDto,
-      role: 'B2BModeratorGroup',
+      userGroup: 'B2BModeratorGroup',
     });
     return `B2B Moderator created successfully with temporary password: ${tempPassword}`;
   }
@@ -124,9 +129,9 @@ export class AuthenticationController {
   @Post('pass/change/init')
   @HttpCode(HttpStatus.OK)
   async changeInitialPassword(
-    @Body() { email, session, password }: { email: string; session: string; password: string },
+    @Body() changeInitialPasswordRequest: ChangeInitialPasswordRequest,
   ): Promise<string> {
-    await this.authService.changeInitialPassword(email, session, password);
+    await this.authService.changeInitialPassword(changeInitialPasswordRequest);
     return 'Password changed successfully.';
   }
 }
