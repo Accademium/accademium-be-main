@@ -18,10 +18,11 @@ import {
     ChangePasswordCommand,
   } from '@aws-sdk/client-cognito-identity-provider';
 import { AwsConfigService } from '../../config/aws-config.service';
-import { LoginRequest, RegistrationRequest } from 'src/modules/user/dto/userAuthRequest';
+import { ChangePasswordRequest, LoginRequest, RegistrationRequest } from 'src/modules/user/dto/userAuthRequest';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
 import { CognitoErrorMessage } from '../enums/aws-error-message.enum';
 import { AwsException } from 'src/utils/exceptions/aws.exception';
+import { AccademiumException } from 'src/utils/exceptions/accademium.exception';
   
 @Injectable()
 export class CognitoService {
@@ -41,7 +42,13 @@ export class CognitoService {
         },
       });
     }
-  
+
+
+    /**
+     * Registers a new student user in Cognito with the provided registration details.
+     * @param registerDto - An object containing the registration data, including email, password, and organization ID.
+     * @throws {AwsException} If the signup process fails.
+     */
     async createStudent(registerDto: RegistrationRequest) {
         try {
             return await this.cognitoClient.send(
@@ -64,6 +71,13 @@ export class CognitoService {
         }
     }
   
+    /**
+     * Creates a new B2B user in Cognito with a temporary password.
+     * @param tempPassword - The temporary password assigned to the user.
+     * @param email - The email address of the new user.
+     * @param organisationId - The organization ID associated with the user.
+     * @throws {AwsException} If the user creation fails.
+     */
     async adminCreateUser(tempPassword: string, email: string, organisationId: string) {
         this.logger.log(`Creating B2B user with email: ${email}`);
         try {
@@ -87,6 +101,12 @@ export class CognitoService {
         }
     }
   
+    /**
+     * Adds a user to a specified Cognito group.
+     * @param userGroup - The group name to which the user should be added.
+     * @param email - The email of the user to be added to the group.
+     * @throws {AwsException} If adding the user to the group fails.
+     */
     async adminAddUserToGroup(userGroup: string, email: string) {
         try {
             return await this.cognitoClient.send(
@@ -104,7 +124,13 @@ export class CognitoService {
             );
         }
     }
-  
+    /**
+     * Initiates an authentication request for a user with provided credentials.
+     * @param loginDto - Contains user credentials such as email and password.
+     * @returns The authentication response, including tokens or challenges.
+     * @throws {AwsException} If the authentication fails.
+     * @throws {AccademiumException} If the challenge is unsupported.
+     */
     async initiateAuth(loginDto: LoginRequest) {
         let authResponse: any;
         try {
@@ -142,6 +168,12 @@ export class CognitoService {
         }
     }
   
+    /**
+     * Confirms the sign-up of a user using the provided confirmation code.
+     * @param email - The email of the user whose sign-up needs to be confirmed.
+     * @param code - The confirmation code sent to the user.
+     * @throws {AwsException} If confirmation of the sign-up fails.
+     */
     async confirmSignUp(email: string, code: string) {
         try {
             return await this.cognitoClient.send(
@@ -160,6 +192,11 @@ export class CognitoService {
         }
     }
   
+    /**
+     * Retrieves information about a specific user from Cognito.
+     * @param email - The email of the user to retrieve.
+     * @throws {AwsException} If retrieving the user information fails.
+     */
     async adminGetUser(email: string) {
         try {
             return await this.cognitoClient.send(
@@ -177,6 +214,11 @@ export class CognitoService {
         }
     }
   
+    /**
+     * Deletes a user from the Cognito User Pool.
+     * @param email - The email of the user to be deleted.
+     * @throws {AwsException} If the user deletion fails.
+     */
     async adminDeleteUser(email: string) {
         try {
             return await this.cognitoClient.send(
@@ -194,6 +236,13 @@ export class CognitoService {
         }
     }
   
+    /**
+     * Completes the new password challenge for a user when required during the authentication flow.
+     * @param email - The email of the user.
+     * @param session - The session token from the authentication response.
+     * @param newPassword - The new password set by the user.
+     * @throws {AwsException} If completing the new password challenge fails.
+     */
     async respondToNewPasswordChallenge(email: string, session: string, newPassword: string) {
         try {
             return await this.cognitoClient.send(
@@ -217,13 +266,21 @@ export class CognitoService {
         }
     }
   
-    async changePassword(cognitoAccessToken: string, currentPassword: string, newPassword: string) {
+    /**
+     * Changes the password of a user in Cognito using their access token.
+     * @param changePasswordRequest {@link ChangePasswordRequest} - Data object containing the access token of the authenticated user, 
+     * the current password and the new password to be set.
+     * @throws {AwsException} If changing the password fails.
+     */
+    async changePassword(
+        changePasswordRequest: ChangePasswordRequest
+    ) {
         try {
             return await this.cognitoClient.send(
                 new ChangePasswordCommand({
-                    AccessToken: cognitoAccessToken,
-                    PreviousPassword: currentPassword,
-                    ProposedPassword: newPassword,
+                    AccessToken: changePasswordRequest.cognitoAccessToken,
+                    PreviousPassword: changePasswordRequest.currentPassword,
+                    ProposedPassword: changePasswordRequest.newPassword,
                 }),
             );
         } catch (error) {
@@ -235,6 +292,13 @@ export class CognitoService {
         }
     }
 
+    /**
+     * Handles errors occurring during Cognito operations and logs them.
+     * @param error - The exception thrown during Cognito operations.
+     * @param message - The custom error message to be logged.
+     * @param code - The specific error code corresponding to the operation that failed.
+     * @throws {AwsException} Re-throws the error with a custom message and code.
+     */
     private handleCognitoError(error: AwsException, message: string, code: string) {
         this.logger.error(message);
         throw this.errorHandlingService.createAwsException(

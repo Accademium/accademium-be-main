@@ -45,8 +45,8 @@ export class VerifyUserRequest {
 }
 
 export class ChangePasswordRequest {
-  @IsEmail()
-  email: string;
+  @IsString()
+  cognitoAccessToken: string;
 
   @IsString()
   currentPassword: string;
@@ -54,3 +54,5 @@ export class ChangePasswordRequest {
   @IsString()
   newPassword: string;
 }
+
+// cognitoAccessToken: string, currentPassword: string, newPassword: string
