@@ -8,8 +8,15 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
     private readonly logger = new Logger(GlobalExceptionFilter.name);
 
     catch(exception: unknown, host: ArgumentsHost) {
+        this.logger.error('Exception caught:', exception);
+        this.logger.debug('Host context:', host.getType());
+
         const ctx = host.switchToHttp();
         const response = ctx.getResponse();
+        const request = ctx.getRequest();
+
+        this.logger.debug('Request path:', request?.url);
+        this.logger.debug('Response defined:', !!response);
 
         if (exception instanceof BaseException) {
             const errorResponse: any = {
@@ -36,7 +43,15 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
         } 
         else 
         {
-            super.catch(exception, host);
+            this.logger.error('Unexpected error', exception);
+            if (response && response.status) {
+                response.status(500).json({
+                    statusCode: 500,
+                    message: 'Internal server error'
+                });
+            } else {
+                super.catch.call(this, exception, host);
+            }
         }
     }
 }
