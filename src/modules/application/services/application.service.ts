@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ApplicationRepository } from '../repositories/application.repository';
-import { Application, ApplicationKey } from '../interfaces/application.interface';
+import { Application } from '../interfaces/application.interface';
 import { v4 as uuidv4 } from 'uuid';
+import { ApplicationKey, UserKey } from 'src/utils/interfaces/keys';
 
 @Injectable()
 export class ApplicationService {
@@ -15,7 +16,7 @@ export class ApplicationService {
    * @returns Promise<Application[]> - A list of applications
    */
   async getAllApplicationsForUser(
-    userId: string
+    userId: UserKey
   ): Promise<Application[]> {
     return this.applicationRepository.findAllByUserId(userId);
   }
@@ -28,7 +29,7 @@ export class ApplicationService {
    * @throws NotFoundException if the application is not found
    */
   async getApplicationForUser(
-    userId: string, 
+    userId: UserKey, 
     applicationId: ApplicationKey
   ): Promise<Application> {
     const application = await this.applicationRepository.findByUserIdAndApplicationId(userId, applicationId);
@@ -47,7 +48,7 @@ export class ApplicationService {
    * @throws NotFoundException if the application is not found
    */
   async updateApplicationStatus(
-    userId: string, 
+    userId: UserKey, 
     applicationId: ApplicationKey, 
     status: string
   ): Promise<Application> {
@@ -61,12 +62,13 @@ export class ApplicationService {
    * @returns Promise<Application> - The created application
    */
   async createApplication(
-    userId: string, applicationData: Omit<Application, 'userId' | 'applicationId' | 'creationDate' | 'lastUpdatedDate'>
+    userId: UserKey, 
+    applicationData: Omit<Application, 'userId' | 'applicationId' | 'creationDate' | 'lastUpdatedDate'>
   ): Promise<Application> {
     const newApplication: Application = {
       ...applicationData,
-      applicationId: uuidv4(),
-      userId: userId,
+      application_id: uuidv4(),
+      user_id: userId,
       creationDate: new Date(),
       lastUpdatedDate: new Date(),
       status: 'In Progress' //TODO replace with constant

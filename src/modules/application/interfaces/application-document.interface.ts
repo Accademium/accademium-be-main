@@ -1,4 +1,4 @@
-import { ApplicationKey } from "./application.interface";
+import { ApplicationKey, DocumentKey } from "src/utils/interfaces/keys";
 
 export interface ApplicationDocument extends DocumentKey{
     applicationId: ApplicationKey;
@@ -14,8 +14,4 @@ export interface ApplicationDocument extends DocumentKey{
     approvalDate?: Date;
     rejectionReason?: string;
     version: number;
-}
-
-export interface DocumentKey{
-    documentId: string;
 }

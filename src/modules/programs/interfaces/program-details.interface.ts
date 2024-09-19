@@ -1,5 +1,6 @@
-export interface ProgramDetails extends Document {
-  program_id: string;
+import { ProgramDetailsKey } from "src/utils/interfaces/keys";
+
+export interface ProgramDetails extends ProgramDetailsKey {
   address: string;
   city: string;
   dates_2025: {

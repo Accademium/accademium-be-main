@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { ProgramDetails } from '../interfaces/program-details.interface';
-import { ProgramKey } from '../interfaces/program-key.interface';
+import { ProgramKey } from 'src/utils/interfaces/keys';
 
 @Injectable()
 export class ProgramDetailsRepository {
@@ -10,12 +10,16 @@ export class ProgramDetailsRepository {
     private programDetailsModel: Model<ProgramDetails, ProgramKey>,
   ) {}
 
-  async get(key: ProgramKey): Promise<ProgramDetails> {
+  async get(
+    key: ProgramKey
+  ): Promise<ProgramDetails> {
     console.log("Details: " + key)
     return await this.programDetailsModel.get(key);
   }
 
-  async create(programDetails: ProgramDetails): Promise<ProgramDetails> {
+  async create(
+    programDetails: ProgramDetails
+  ): Promise<ProgramDetails> {
     return await this.programDetailsModel.create(programDetails);
   }
 
@@ -26,7 +30,9 @@ export class ProgramDetailsRepository {
     return await this.programDetailsModel.update(key, program);
   }
 
-  async findByStudyType(study_type: string): Promise<ProgramDetails[]> {
+  async findByStudyType(
+    study_type: string
+  ): Promise<ProgramDetails[]> {
     return await this.programDetailsModel.scan('study_type').eq(study_type).exec();
   }
 }

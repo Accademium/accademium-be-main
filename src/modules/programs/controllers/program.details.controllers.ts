@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Body, Param } from '@nestjs/common';
 import { ProgramDetailsService } from '../services/program.details.service';
 import { ProgramDetails } from '../interfaces/program-details.interface';
-import { ProgramKey } from '../interfaces/program-key.interface';
+import { ProgramKey } from 'src/utils/interfaces/keys';
 
 @Controller('api/v1/program-details/')
 export class ProgramDetailsController {

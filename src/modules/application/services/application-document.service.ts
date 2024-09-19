@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ApplicationDocumentRepository } from '../repositories/application-document.repository.ts';
-import { ApplicationDocument, DocumentKey } from '../interfaces/application-document.interface';
+import { ApplicationDocument } from '../interfaces/application-document.interface';
 import { v4 as uuidv4 } from 'uuid';
-import { ApplicationKey } from '../interfaces/application.interface.js';
+import { ApplicationKey, DocumentKey } from 'src/utils/interfaces/keys.js';
 
 @Injectable()
 export class ApplicationDocumentService {
@@ -55,7 +55,7 @@ export class ApplicationDocumentService {
   ): Promise<ApplicationDocument> {
     const newDocument: ApplicationDocument = {
       ...documentData,
-      documentId: uuidv4(),
+      document_id: uuidv4(),
       applicationId,
       uploadDate: new Date(),
     };

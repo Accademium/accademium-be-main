@@ -1,5 +1,7 @@
-export interface Application extends ApplicationKey{
-    userId: string;
+import { ApplicationKey, UserKey } from "src/utils/interfaces/keys";
+
+export interface Application extends ApplicationKey {
+    user_id: UserKey;
     status: string;
     creationDate: Date;
     lastUpdatedDate: Date;
@@ -10,8 +12,4 @@ export interface Application extends ApplicationKey{
     adminId?: string;
     notes?: string;
     requiredDocuments: string[];
-}
-
-export interface ApplicationKey {
-    applicationId: string;
 }

@@ -1,9 +1,9 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ProgramCore } from '../interfaces/program-core.interface';
-import { ProgramKey } from '../interfaces/program-key.interface';
 import { ProgramCoreRepository } from '../repositories/program.core.repository';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
 import { AwsException } from 'src/utils/exceptions/aws.exception';
+import { ProgramKey } from 'src/utils/interfaces/keys';
 
 @Injectable()
 export class ProgramCoreService {
@@ -15,7 +15,9 @@ export class ProgramCoreService {
     private errorHandlingService: ErrorHandlingService,
   ) {}
 
-  async getProgramCore(key: ProgramKey): Promise<ProgramCore> {
+  async getProgramCore(
+    key: ProgramKey
+  ): Promise<ProgramCore> {
     try {
       return await this.programCoreRepository.get(key);
     } catch (error) {
@@ -27,7 +29,9 @@ export class ProgramCoreService {
     }
   }
 
-  async createProgramCore(programCore: ProgramCore): Promise<ProgramCore> {
+  async createProgramCore(
+    programCore: ProgramCore
+  ): Promise<ProgramCore> {
     try {
       return await this.programCoreRepository.create(programCore);
     } catch (error) {
@@ -57,7 +61,9 @@ export class ProgramCoreService {
     }
   }
 
-  async getProgramsByField(field: string): Promise<ProgramCore[]> {
+  async getProgramsByField(
+    field: string
+  ): Promise<ProgramCore[]> {
     try 
     {
       return await this.programCoreRepository.findByField(field);

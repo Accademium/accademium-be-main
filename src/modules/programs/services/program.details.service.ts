@@ -1,9 +1,9 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ProgramDetails } from '../interfaces/program-details.interface';
-import { ProgramKey } from '../interfaces/program-key.interface';
 import { ProgramDetailsRepository } from '../repositories/program.details.repository';
 import { AwsException } from 'src/utils/exceptions/aws.exception';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
+import { ProgramKey } from 'src/utils/interfaces/keys';
 
 @Injectable()
 export class ProgramDetailsService {
@@ -15,7 +15,9 @@ export class ProgramDetailsService {
         private errorHandlingService: ErrorHandlingService
     ) {}
 
-  async getProgramDetails(key: ProgramKey): Promise<ProgramDetails> {
+  async getProgramDetails(
+    key: ProgramKey
+  ): Promise<ProgramDetails> {
     try {
         console.log(key)
         return await this.programDetailsRepository.get(key);
@@ -26,7 +28,7 @@ export class ProgramDetailsService {
             'GET_PROGRAM_CORE_ERROR',
         );
     }
-    }
+  }
 
   async createProgramDetails(
     programDetails: ProgramDetails,
@@ -41,7 +43,9 @@ export class ProgramDetailsService {
     return await this.programDetailsRepository.update(key, program);
   }
 
-  async getProgramsByStudyType(study_type: string) {
+  async getProgramsByStudyType(
+    study_type: string
+  ) {
     try {
       return await this.programDetailsRepository.findByStudyType(study_type);
     } catch (error) {

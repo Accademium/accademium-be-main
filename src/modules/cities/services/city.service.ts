@@ -10,7 +10,7 @@ export class CityService {
 
   async createCity(createCityDTO: CreateCityDTO): Promise<City> {
     const city: City = {
-      id: uuidv4(),
+      city_id: uuidv4(),
       ...createCityDTO,
     };
     return await this.cityRepository.create(city);

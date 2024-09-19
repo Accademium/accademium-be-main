@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
-import { City, CityKey } from '../interfaces/city.interface';
+import { City } from '../interfaces/city.interface';
+import { CityKey } from 'src/utils/interfaces/keys';
 
 @Injectable()
 export class CityRepository {

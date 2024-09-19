@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { ApplicationDocument, DocumentKey } from '../interfaces/application-document.interface';
+import { ApplicationDocument } from '../interfaces/application-document.interface';
 import { InjectModel, Model } from 'nestjs-dynamoose';
-import { ApplicationKey } from '../interfaces/application.interface';
+import { ApplicationKey, DocumentKey } from 'src/utils/interfaces/keys';
 
 @Injectable()
 export class ApplicationDocumentRepository {
@@ -42,14 +42,20 @@ export class ApplicationDocumentRepository {
    * @param approvalStatus - The new approval status
    * @returns Promise<ApplicationDocument | null> - The updated document or null if not found
    */
-  async updateApprovalStatus(applicationId: ApplicationKey, documentId: DocumentKey, approvalStatus: string): Promise<ApplicationDocument> {
+  async updateApprovalStatus(
+    applicationId: ApplicationKey, 
+    documentId: DocumentKey, 
+    approvalStatus: string
+  ): Promise<ApplicationDocument> {
     return null;
     // return this.applicationDocumentModel.update(
     //   { applicationId, documentId }, 
     //   { approvalStatus, approvalDate: new Date() });
   }
 
-  async save(document: ApplicationDocument): Promise<ApplicationDocument> {
+  async save(
+    document: ApplicationDocument
+  ): Promise<ApplicationDocument> {
     return this.applicationDocumentModel.create(document);
   }
 }

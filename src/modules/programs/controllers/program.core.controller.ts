@@ -1,7 +1,7 @@
 import { Controller, Get, Put, Body, Param } from '@nestjs/common';
 import { ProgramCoreService } from '../services/program.core.service';
 import { ProgramCore } from '../interfaces/program-core.interface';
-import { ProgramKey } from '../interfaces/program-key.interface';
+import { ProgramKey } from 'src/utils/interfaces/keys';
 
 @Controller('api/v1/program-core/')
 export class ProgramCoreController {

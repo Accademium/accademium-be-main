@@ -1,7 +1,7 @@
 import { Controller, Get, Put, Param, Body } from '@nestjs/common';
 import { ApplicationDocumentService } from '../services/application-document.service';
-import { ApplicationDocument, DocumentKey } from '../interfaces/application-document.interface';
-import { ApplicationKey } from '../interfaces/application.interface';
+import { ApplicationDocument } from '../interfaces/application-document.interface';
+import { ApplicationKey, DocumentKey } from 'src/utils/interfaces/keys';
 
 @Controller('api/v1/application-documents/')
 export class ApplicationDocumentController {

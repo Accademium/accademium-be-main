@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { ProgramCore } from '../interfaces/program-core.interface';
-import { ProgramKey } from '../interfaces/program-key.interface';
+import { ProgramKey } from 'src/utils/interfaces/keys';
 
 @Injectable()
 export class ProgramCoreRepository {
@@ -10,12 +10,16 @@ export class ProgramCoreRepository {
     private programsCoreModel: Model<ProgramCore, ProgramKey>,
   ) {}
 
-  async get(key: ProgramKey): Promise<ProgramCore> {
+  async get(
+    key: ProgramKey
+  ): Promise<ProgramCore> {
     console.log("Core: " + key)
     return await this.programsCoreModel.get(key);
   }
 
-  async create(programCore: ProgramCore): Promise<ProgramCore> {
+  async create(
+    programCore: ProgramCore
+  ): Promise<ProgramCore> {
     return await this.programsCoreModel.create(programCore);
   }
 
@@ -44,6 +48,6 @@ export class ProgramCoreRepository {
       .scan('fields') // Specify the attribute to scan
       .contains(field) // Add condition to check if 'fields' contains the value
       .attributes(['program_id', 'title', 'city']) // Specify which attributes to return
-      .exec(); // Execute the scan operation
+      .exec();
   }
 }
