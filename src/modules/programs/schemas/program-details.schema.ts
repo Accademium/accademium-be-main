@@ -1,17 +1,19 @@
-import { Schema } from 'dynamoose';
+import { Schema } from "dynamoose/dist/Schema";
 
 export const ProgramDetailsSchema = new Schema({
   program_id: {
     type: String,
-    hashKey: true
+    hashKey: true,
   },
   address: String,
   city: String,
   dates_2025: {
     type: Object,
     schema: {
-      type: String
-    }
+      eu: String,
+      non_eu: String,
+      start_date: String
+    },
   },
   description: String,
   duration: String,
@@ -19,8 +21,10 @@ export const ProgramDetailsSchema = new Schema({
   fees: {
     type: Object,
     schema: {
-      type: String
-    }
+      eu: String,
+      institutional: String,
+      non_eu: String,
+    },
   },
   field: String,
   institution_link: String,
@@ -30,5 +34,5 @@ export const ProgramDetailsSchema = new Schema({
   link: String,
   sector: String,
   study_type: String,
-  title: String
+  title: String,
 });

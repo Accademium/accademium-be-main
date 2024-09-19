@@ -16,13 +16,13 @@ import { GlobalExceptionFilter } from './utils/filters/global-exception.filter';
       isGlobal: true,
     }),
     DynamoModule,
-    UserModule, 
-    ProgramsModule, 
-    UniversityModule, 
-    SurveyModule, 
+    UserModule,
+    ProgramsModule,
+    UniversityModule,
+    SurveyModule,
     AuthenticationModule,
     ApplicationModule,
-    ],
+  ],
   providers: [
     {
       provide: APP_FILTER,

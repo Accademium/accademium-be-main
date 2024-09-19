@@ -5,13 +5,18 @@ import { CognitoService } from '../../aws/cognito/cognito-client.service';
 export class UserService {
   constructor(private readonly cognitoService: CognitoService) {}
 
-  async getUserProfile(email: string): Promise<{ UserAttributes: any; UserCreateDate: Date }> {
+  async getUserProfile(
+    email: string,
+  ): Promise<{ UserAttributes: any; UserCreateDate: Date }> {
     try {
       const response = await this.cognitoService.adminGetUser(email);
       const { UserAttributes, UserCreateDate } = response;
       return { UserAttributes, UserCreateDate };
     } catch (error) {
-      throw new InternalServerErrorException('Failed to retrieve user profile', error.message);
+      throw new InternalServerErrorException(
+        'Failed to retrieve user profile',
+        error.message,
+      );
     }
   }
 
@@ -19,7 +24,10 @@ export class UserService {
     try {
       await this.cognitoService.adminDeleteUser(email);
     } catch (error) {
-      throw new InternalServerErrorException('Failed to delete user profile', error.message);
+      throw new InternalServerErrorException(
+        'Failed to delete user profile',
+        error.message,
+      );
     }
   }
 }

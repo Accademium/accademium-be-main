@@ -1,22 +1,22 @@
-import { Schema } from 'dynamoose';
+import { Schema } from "dynamoose/dist/Schema";
 
-export const ProgramCoreSchema = new Schema({
+export const ProgramCoreSchema = new Schema ({
   program_id: {
     type: String,
-    hashKey: true
+    hashKey: true,
   },
   city: String,
   fields: {
     type: Array,
-    schema: [String]
+    schema: [String],
   },
   field_tags: {
     type: Array,
-    schema: [String]
+    schema: [String],
   },
   name: {
-    type: Array,
-    schema: [String]
+    type: [String, Array],
+    schema: [String],
   },
-  title: String
+  title: String,
 });

@@ -5,20 +5,28 @@ import { ProgramKey } from '../interfaces/program-key.interface';
 
 @Injectable()
 export class ProgramDetailsRepository {
-    constructor(
-        @InjectModel('ProgramDetails')
-        private programDetailsModel: Model<ProgramDetails, ProgramKey>
-    ) {}
+  constructor(
+    @InjectModel('ProgramDetails')
+    private programDetailsModel: Model<ProgramDetails, ProgramKey>,
+  ) {}
 
-    async get(key: ProgramKey): Promise<ProgramDetails> {
-        return await this.programDetailsModel.get(key);
-    }
+  async get(key: ProgramKey): Promise<ProgramDetails> {
+    console.log("Details: " + key)
+    return await this.programDetailsModel.get(key);
+  }
 
-    async create(programDetails: ProgramDetails): Promise<ProgramDetails> {
-        return await this.programDetailsModel.create(programDetails);
-    }
+  async create(programDetails: ProgramDetails): Promise<ProgramDetails> {
+    return await this.programDetailsModel.create(programDetails);
+  }
 
-    async update(key: ProgramKey, program: Partial<ProgramDetails>): Promise<ProgramDetails> {
-        return await this.programDetailsModel.update(key, program);
-    }
+  async update(
+    key: ProgramKey,
+    program: Partial<ProgramDetails>,
+  ): Promise<ProgramDetails> {
+    return await this.programDetailsModel.update(key, program);
+  }
+
+  async findByStudyType(study_type: string): Promise<ProgramDetails[]> {
+    return await this.programDetailsModel.scan('study_type').eq(study_type).exec();
+  }
 }

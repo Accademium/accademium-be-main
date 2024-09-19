@@ -7,11 +7,11 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
-import { 
-  RegistrationRequest, 
-  LoginRequest, 
-  VerifyUserRequest, 
-  ChangePasswordRequest
+import {
+  RegistrationRequest,
+  LoginRequest,
+  VerifyUserRequest,
+  ChangePasswordRequest,
 } from 'src/modules/user/dto/user.auth.dto';
 import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
 
@@ -37,7 +37,7 @@ export class AuthenticationController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async registerStudent(
-    @Body() registerDto: RegistrationRequest
+    @Body() registerDto: RegistrationRequest,
   ): Promise<string> {
     await this.authService.registerUser(registerDto);
     return 'Student registered successfully. Please check your email for verification.';
@@ -50,9 +50,7 @@ export class AuthenticationController {
    */
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(
-    @Body() loginDto: LoginRequest
-  ): Promise<{ token: string }> {
+  async login(@Body() loginDto: LoginRequest): Promise<{ token: string }> {
     const token = await this.authService.loginUser(loginDto);
     return { token };
   }
@@ -64,9 +62,7 @@ export class AuthenticationController {
    */
   @Post('verify')
   @HttpCode(HttpStatus.OK)
-  async verify(
-    @Body() verifyDto: VerifyUserRequest
-  ): Promise<string> {
+  async verify(@Body() verifyDto: VerifyUserRequest): Promise<string> {
     await this.authService.verifyUser(verifyDto);
     return 'User verified successfully.';
   }

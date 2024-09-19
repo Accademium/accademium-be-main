@@ -18,6 +18,9 @@ import { ErrorHandlingService } from 'src/utils/services/error-handling.service'
         schema: ProgramDetailsSchema,
         options: {
           tableName: 'program_details',
+          create: false,
+          update: false,
+          waitForActive: false,
         },
       },
       {
@@ -25,14 +28,14 @@ import { ErrorHandlingService } from 'src/utils/services/error-handling.service'
         schema: ProgramCoreSchema,
         options: {
           tableName: 'programs_core',
+          create: false,
+          update: false,
+          waitForActive: false,
         },
       },
     ]),
   ],
-  controllers: [
-    ProgramDetailsController, 
-    ProgramCoreController
-  ],
+  controllers: [ProgramDetailsController, ProgramCoreController],
   providers: [
     ProgramDetailsService,
     ProgramCoreService,
@@ -40,9 +43,6 @@ import { ErrorHandlingService } from 'src/utils/services/error-handling.service'
     ProgramCoreRepository,
     ErrorHandlingService,
   ],
-  exports: [
-    ProgramDetailsService, 
-    ProgramCoreService
-  ],
+  exports: [ProgramDetailsService, ProgramCoreService],
 })
 export class ProgramsModule {}

@@ -3,5 +3,7 @@ import { UniversityService } from './university.service';
 
 @Controller('university')
 export class UniversityController {
-  constructor(private readonly universityService: UniversityService) {}
+  constructor(
+    private readonly universityService: UniversityService
+  ) {}
 }

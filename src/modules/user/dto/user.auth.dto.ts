@@ -14,7 +14,7 @@ export class RegistrationRequest {
   password: string;
 
   @IsString()
-  organisationId: string
+  organisationId: string;
 }
 
 export class CreateB2BUserRequest {

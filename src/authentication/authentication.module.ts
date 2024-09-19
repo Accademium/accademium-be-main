@@ -9,18 +9,14 @@ import { CognitoClientModule } from 'src/aws/cognito/cognito-client.module';
 
 @Module({
   controllers: [AuthenticationController],
-  providers: [
-    AuthenticationService,
-    JwtStrategy,
-    RefreshJwtStrategy,
-  ],
+  providers: [AuthenticationService, JwtStrategy, RefreshJwtStrategy],
   imports: [
     JwtModule.register({
       secret: `${process.env.jwt_secret}`,
       signOptions: { expiresIn: '60s' },
     }),
     UserModule,
-    CognitoClientModule
-  ]
+    CognitoClientModule,
+  ],
 })
 export class AuthenticationModule {}

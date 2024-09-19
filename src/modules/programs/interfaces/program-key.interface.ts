@@ -1,3 +1,3 @@
 export interface ProgramKey {
-    program_id: string;
+  program_id: string;
 }
