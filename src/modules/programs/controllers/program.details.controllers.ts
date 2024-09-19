@@ -3,7 +3,7 @@ import { ProgramDetailsService } from '../services/program.details.service';
 import { ProgramDetails } from '../interfaces/program-details.interface';
 import { ProgramKey } from '../interfaces/program-key.interface';
 
-@Controller('program-details')
+@Controller('api/v1/program-details/')
 export class ProgramDetailsController {
   constructor(private readonly programDetailsService: ProgramDetailsService) {}
 

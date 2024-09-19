@@ -4,7 +4,7 @@ import { RecommendationRequestDto } from '../dtos/recommendation-request.dto';
 import { RecommedationResponseDto } from '../dtos/recommendation-response.dto';
 import { UniversityProgramResponseDto } from '../dtos/university-program-response.dto';
 
-@Controller('survey')
+@Controller('api/v1/survey/')
 export class SurveyController {
   constructor(private readonly surveyService: SurveyService) {}
 

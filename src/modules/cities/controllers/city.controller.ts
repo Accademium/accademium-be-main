@@ -3,7 +3,7 @@ import { CityService } from '../services/city.service';
 import { CreateCityDTO } from '../dto/create-city.dto';
 import { City } from '../interfaces/city.interface';
 
-@Controller('cities')
+@Controller('api/v1/cities/')
 export class CityController {
     constructor(
         private readonly cityService: CityService

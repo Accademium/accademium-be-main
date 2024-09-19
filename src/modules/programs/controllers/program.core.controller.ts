@@ -3,7 +3,7 @@ import { ProgramCoreService } from '../services/program.core.service';
 import { ProgramCore } from '../interfaces/program-core.interface';
 import { ProgramKey } from '../interfaces/program-key.interface';
 
-@Controller('program-core')
+@Controller('api/v1/program-core/')
 export class ProgramCoreController {
   constructor(private readonly programCoreService: ProgramCoreService) {}
 

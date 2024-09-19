@@ -15,7 +15,7 @@ import {
 } from 'src/modules/user/dto/user.auth.dto';
 import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
 
-@Controller('api/v1/')
+@Controller('api/v1/auth/')
 export class AuthenticationController {
   constructor(private readonly authService: AuthenticationService) {}
 

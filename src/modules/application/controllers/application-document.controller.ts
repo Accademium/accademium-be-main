@@ -3,7 +3,7 @@ import { ApplicationDocumentService } from '../services/application-document.ser
 import { ApplicationDocument, DocumentKey } from '../interfaces/application-document.interface';
 import { ApplicationKey } from '../interfaces/application.interface';
 
-@Controller('application-documents')
+@Controller('api/v1/application-documents/')
 export class ApplicationDocumentController {
     constructor(private readonly applicationDocumentService: ApplicationDocumentService) {}
 
