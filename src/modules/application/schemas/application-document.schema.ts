@@ -29,10 +29,6 @@ export const applicationDocumentSchema = new dynamoose.Schema({
     type: String,
     required: true,
   },
-  uploadDate: {
-    type: Date,
-    default: () => new Date(), // Automatically set upload date
-  },
   fileSize: {
     type: Number,
     required: true,

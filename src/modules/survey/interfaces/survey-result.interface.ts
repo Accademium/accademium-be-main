@@ -1,5 +1,5 @@
 import { CustomerAgreement } from "src/utils/enums/survey.enums";
-import { SurveyKey } from "./survey-key.interface";
+import { SurveyKey } from "src/utils/interfaces/keys";
 
 export interface ISurveyResult extends SurveyKey{
     userId: string;

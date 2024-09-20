@@ -35,6 +35,4 @@ export const CitySchema = new Schema({
     type: String,
     required: true,
   },
-}, {
-  timestamps: true,
 });

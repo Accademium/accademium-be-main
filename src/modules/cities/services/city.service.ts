@@ -6,9 +6,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class CityService {
-  constructor(private readonly cityRepository: CityRepository) {}
+  constructor(
+    private readonly cityRepository: CityRepository
+  ) {}
 
-  async createCity(createCityDTO: CreateCityDTO): Promise<City> {
+  async createCity(
+    createCityDTO: CreateCityDTO
+  ): Promise<City> {
     const city: City = {
       city_id: uuidv4(),
       ...createCityDTO,
@@ -16,7 +20,9 @@ export class CityService {
     return await this.cityRepository.create(city);
   }
 
-  async findByName(name: string): Promise<City> {
+  async findByName(
+    name: string
+  ): Promise<City> {
     return await this.cityRepository.findByName(name);
   }
 }

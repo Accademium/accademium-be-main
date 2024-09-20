@@ -9,12 +9,16 @@ export class SurveyController {
   constructor(private readonly surveyService: SurveyService) {}
 
   @Post()
-  async processSurvey(@Body() surveyRequest: RecommendationRequestDto): Promise<RecommedationResponseDto> {
+  async processSurvey(
+    @Body() surveyRequest: RecommendationRequestDto
+  ): Promise<RecommedationResponseDto> {
     return this.surveyService.processSurvey(surveyRequest);
   }
 
   @Post('university-programs')
-  async getUniversityProgramRecommendations(@Body() surveyRequest: RecommendationRequestDto): Promise<UniversityProgramResponseDto> {
+  async getUniversityProgramRecommendations(
+    @Body() surveyRequest: RecommendationRequestDto
+  ): Promise<UniversityProgramResponseDto> {
     return this.surveyService.getUniversityProgramRecommendations(surveyRequest);
   }
 }

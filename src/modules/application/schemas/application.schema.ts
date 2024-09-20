@@ -15,15 +15,7 @@ export const applicationSchema = new dynamoose.Schema({
   },
   status: {
     type: String,
-    // required: true,
-  },
-  creationDate: {
-    type: Date,
-    default: () => new Date(),
-  },
-  lastUpdatedDate: {
-    type: Date,
-    default: () => new Date(),
+    required: true,
   },
   universityId: {
     type: String,

@@ -2,6 +2,7 @@ import { Catch, ArgumentsHost, HttpException, Logger } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { BaseException } from '../exceptions/base.exception';
 import { AwsException } from '../exceptions/aws.exception';
+import { AIClientException } from '../exceptions/ai-client.exception';
 
 @Catch()
 export class GlobalExceptionFilter extends BaseExceptionFilter {
@@ -9,7 +10,6 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost) {
     this.logger.error('Exception caught:', exception);
-    this.logger.debug('Host context:', host.getType());
 
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
@@ -33,6 +33,10 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
           errorResponse.serviceSpecificDetails =
             exception.serviceSpecificDetails;
         }
+      }
+
+      if (exception instanceof AIClientException) {
+        errorResponse.aiModel = exception.aiClientType;
       }
 
       response.status(exception.statusCode).json(errorResponse);

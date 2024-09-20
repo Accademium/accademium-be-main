@@ -19,14 +19,14 @@ export class ProgramDetailsService {
     key: ProgramKey
   ): Promise<ProgramDetails> {
     try {
-        console.log(key)
-        return await this.programDetailsRepository.get(key);
+      console.log(key)
+      return await this.programDetailsRepository.get(key);
     } catch (error) {
-        throw this.handleDynamoError(
-            error,
-            'Failed to get program core',
-            'GET_PROGRAM_CORE_ERROR',
-        );
+      throw this.handleDynamoError(
+        error,
+        'Failed to get program core',
+        'GET_PROGRAM_CORE_ERROR',
+      );
     }
   }
 
@@ -57,7 +57,7 @@ export class ProgramDetailsService {
       );
     }  }
 
-    /**
+  /**
    * Handles errors occurring during DynamoDB operations and logs them.
    * @param error - The exception thrown during DynamoDB operations.
    * @param message - The custom error message to be logged.

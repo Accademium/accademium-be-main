@@ -1,6 +1,8 @@
 import { IsObject } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class RecommendationRequestDto {
   @IsObject()
-  answers: Record<number, string>;
+  @Type(() => Number) 
+  answers: Record<number, number>; 
 }

@@ -21,14 +21,6 @@ export const SurveyResultSchema = new Schema({
     },
     customerAgreement: String,
     questionsVersion: String,
-    createdAt: {
-        type: Date,
-        default: () => new Date(),
-    },
-    updatedAt: {
-        type: Date,
-        default: () => new Date(),
-    },
 }, 
 {
     timestamps: true,

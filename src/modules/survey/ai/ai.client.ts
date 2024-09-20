@@ -1,19 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { HttpCode, HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 import { OpenAI } from "openai";
 import { ConfigService } from '@nestjs/config';
+import { AIClientException } from 'src/utils/exceptions/ai-client.exception';
+import { AIClientEnum } from 'src/utils/enums/ai-client.enums';
+import { HttpErrorMessage } from 'src/utils/enums/general-error-message.enum';
 
 @Injectable()
 export class AIClient {
-    private readonly openai: OpenAI;
+  private readonly SERVICE_NAME = 'AIClient';
+  private readonly logger = new Logger(AIClient.name);
+  private readonly openai: OpenAI;
 
-    constructor(
-        private configService: ConfigService
-    ) {
-        this.openai = new OpenAI({
-            apiKey: this.configService.get<string>('OPENAI_API_KEY'),
-        });  
-    }
+  constructor(
+      private configService: ConfigService
+  ) {
+      this.openai = new OpenAI({
+          apiKey: this.configService.get<string>('OPENAI_API_KEY'),
+      });  
+  }
 
   async getRecommendations(surveyAnswers: string, studyFields: string[]): Promise<any> {
     const prompt = `Based on the answers provided in the orientation survey below, recommend three study fields from the predefined study fields that would be the most suitable for the individual. 
@@ -74,21 +79,60 @@ export class AIClient {
   }
 
   private async getAIResponse(prompt: string): Promise<any> {
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'system', 
-          content: 'You are an expert in education and career counseling.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.2
-    });
+    try
+    {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system', 
+            content: 'You are an expert in education and career counseling.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.2
+      });
 
-    return JSON.parse(response.choices[0].message.content);
+      if (response?.choices?.[0]?.message?.content) {
+        return JSON.parse(response.choices[0].message.content);
+      } else {
+        this.logger.error('Invalid response format from OpenAI.');
+        throw new AIClientException(
+          "Invalid response format from OpenAI.",
+          HttpErrorMessage.IVALID_RESPONSE_FORMAT,
+          HttpStatus.BAD_REQUEST,
+          this.SERVICE_NAME,
+          AIClientEnum.GPT_3_5
+        );
+      }    
+    }
+    catch (error) {
+      if (error.response && error.response.status) {
+        const statusCode = error.response.status;
+        const response = error.response;
+
+        this.logger.error('Error was received from OpenAI-API.');
+        throw new AIClientException(
+          response,
+          "OPEN_AI_ERROR",
+          statusCode,
+          this.SERVICE_NAME,
+          AIClientEnum.GPT_3_5
+        );
+
+      } else {
+        this.logger.error('Unexpected error occurred during openai call. ' + error);
+        throw new AIClientException(
+          'Unexpected error occurred during openai call. ' + error,
+          HttpErrorMessage.UNEXPECTED_ERROR,
+          HttpStatus.BAD_REQUEST,
+          this.SERVICE_NAME,
+          AIClientEnum.GPT_3_5
+        );
+      }
+    }
   }
 }
