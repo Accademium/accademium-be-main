@@ -1,7 +1,7 @@
 import { Schema } from 'dynamoose';
 
 export const CitySchema = new Schema({
-  id: {
+  city_id: {
     type: String,
     hashKey: true,
   },

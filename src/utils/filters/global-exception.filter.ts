@@ -9,13 +9,11 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
   private readonly logger = new Logger(GlobalExceptionFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost) {
-    this.logger.error('Exception caught:', exception);
-
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
 
-    this.logger.debug('Request path:', request?.url);
+    this.logger.debug('Exception caught! Request path:' + request?.url);
 
     if (exception instanceof BaseException) {
       const errorResponse: any = {

@@ -12,13 +12,13 @@ export class SurveyController {
   async processSurvey(
     @Body() surveyRequest: RecommendationRequestDto
   ): Promise<RecommedationResponseDto> {
-    return this.surveyService.processSurvey(surveyRequest);
+    return this.surveyService.processSurvey(surveyRequest, "11111111111");
   }
 
   @Post('university-programs')
   async getUniversityProgramRecommendations(
     @Body() surveyRequest: RecommendationRequestDto
   ): Promise<UniversityProgramResponseDto> {
-    return this.surveyService.getUniversityProgramRecommendations(surveyRequest);
+    return this.surveyService.getUniversityProgramRecommendations("11111111111");
   }
 }

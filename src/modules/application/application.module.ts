@@ -16,14 +16,14 @@ import { applicationDocumentSchema } from './schemas/application-document.schema
         name: 'Application',
         schema: applicationSchema,
         options: {
-          tableName: 'applications',
+          tableName: 'applications'
         },
       },
       {
         name: 'ApplicationDocument',
         schema: applicationDocumentSchema,
         options: {
-          tableName: 'application_documents',
+          tableName: 'application_documents'
         },
       },
     ]),

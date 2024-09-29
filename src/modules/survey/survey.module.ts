@@ -4,17 +4,16 @@ import { SurveyController } from './controllers/survey.controller';
 import { AIClient } from './ai/ai.client';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { SurveyResultSchema } from './schemas/survey-result.schema';
+import { SurveyResultRepository } from './repositories/survey-result.repository';
 
 @Module({
-  imports : [DynamooseModule.forFeature([
+  imports : [
+    DynamooseModule.forFeature([
     {
       name: 'SurveyAnswers',
       schema: SurveyResultSchema,
       options: {
-        tableName: 'survey_answers',
-        create: false,
-        update: false,
-        waitForActive: false,
+        tableName: 'survey_answers'
       },
     },
   ]),
@@ -24,7 +23,8 @@ import { SurveyResultSchema } from './schemas/survey-result.schema';
   ],
   providers: [
     SurveyService, 
-    AIClient
+    AIClient,
+    SurveyResultRepository,
   ],
 })
 export class SurveyModule {}

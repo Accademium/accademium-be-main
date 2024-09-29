@@ -3,7 +3,7 @@ import { SurveyKey } from "src/utils/interfaces/keys";
 
 export interface ISurveyResult extends SurveyKey{
     userId: string;
-    answers: Record<number, string>;
+    answers: Record<number, number>;
     recommendations: string[];
     customerAgreement: CustomerAgreement;
     questionsVersion: string;

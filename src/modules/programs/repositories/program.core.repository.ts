@@ -13,7 +13,6 @@ export class ProgramCoreRepository {
   async get(
     key: ProgramKey
   ): Promise<ProgramCore> {
-    console.log("Core: " + key)
     return await this.programsCoreModel.get(key);
   }
 

@@ -13,38 +13,38 @@ export class SurveyResultRepository {
     async create(
         surveyResult: ISurveyResult
     ): Promise<ISurveyResult> {
-        return await this.model.create(surveyResult);
+        return await this.model.create( surveyResult );
     }
 
     async findBySurveyId(
         surveyId: SurveyKey
-    ): Promise<ISurveyResult | null> {
+    ): Promise<ISurveyResult> {
         return await this.model.get( surveyId );
     }
 
     async findByUserId(
-        userId: SurveyKey
+        userId: string
     ): Promise<ISurveyResult[]> {
-        return await this.model.query('userId').eq(userId).exec();
+        return await this.model.query('userId').eq( userId ).exec();
     }
 
     async update(
         surveyId: SurveyKey, 
         updateData: Partial<ISurveyResult>
     ): Promise<ISurveyResult> {
-        return await this.model.update(surveyId, updateData);
+        return await this.model.update( surveyId, updateData );
     }
 
     async delete(
         surveyId: SurveyKey
     ): Promise<void> {
-        await this.model.delete(surveyId);
+        await this.model.delete( surveyId );
     }
 
     async findByUserIdAndVersion(
         userId: string,
         version: string
     ): Promise<ISurveyResult[]> {
-        return await this.model.query('userId').eq(userId).where('questionsVersion').eq(version).exec();
+        return await this.model.query('userId').eq( userId ).where('questionsVersion').eq(version).exec();
     }
 }

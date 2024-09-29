@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { CitySchema } from './schemas/city.schema';
+import { CityController } from './controllers/city.controller';
+import { CityService } from './services/city.service';
+import { CityRepository } from './repositories/city.repository';
 
 @Module({
   imports: [
@@ -17,9 +20,15 @@ import { CitySchema } from './schemas/city.schema';
       }
     ]),
   ],
-  controllers: [],
-  providers: [
+  controllers: [
+    CityController,
   ],
-  exports: [],
+  providers: [
+    CityService,
+    CityRepository,
+  ],
+  exports: [
+    CityService
+  ],
 })
-export class CitiesModule {}
+export class CityModule {}

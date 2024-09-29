@@ -99,9 +99,10 @@ export class AIClient {
       if (response?.choices?.[0]?.message?.content) {
         return JSON.parse(response.choices[0].message.content);
       } else {
-        this.logger.error('Invalid response format from OpenAI.');
+        const errMsg = "Invalid response format was received from OpenAI. " + response.choices[0].message.content;
+        this.logger.error(errMsg);
         throw new AIClientException(
-          "Invalid response format from OpenAI.",
+          errMsg,
           HttpErrorMessage.IVALID_RESPONSE_FORMAT,
           HttpStatus.BAD_REQUEST,
           this.SERVICE_NAME,
@@ -110,29 +111,15 @@ export class AIClient {
       }    
     }
     catch (error) {
-      if (error.response && error.response.status) {
-        const statusCode = error.response.status;
-        const response = error.response;
-
-        this.logger.error('Error was received from OpenAI-API.');
-        throw new AIClientException(
-          response,
-          "OPEN_AI_ERROR",
-          statusCode,
-          this.SERVICE_NAME,
-          AIClientEnum.GPT_3_5
-        );
-
-      } else {
-        this.logger.error('Unexpected error occurred during openai call. ' + error);
-        throw new AIClientException(
-          'Unexpected error occurred during openai call. ' + error,
-          HttpErrorMessage.UNEXPECTED_ERROR,
-          HttpStatus.BAD_REQUEST,
-          this.SERVICE_NAME,
-          AIClientEnum.GPT_3_5
-        );
-      }
+      const errMsg = 'Error was received from OpenAI-API. ' + error;
+      this.logger.error(errMsg);
+      throw new AIClientException(
+        errMsg,
+        "OPEN_AI_ERROR",
+        HttpStatus.BAD_REQUEST,
+        this.SERVICE_NAME,
+        AIClientEnum.GPT_3_5
+      );
     }
   }
 }
