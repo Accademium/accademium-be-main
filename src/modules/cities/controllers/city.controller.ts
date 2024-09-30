@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { CityService } from '../services/city.service';
 import { CreateCityDTO } from '../dto/create-city.dto';
-import { City } from '../interfaces/city.interface';
+import { ICity } from '../interfaces/city.interface';
 
 @Controller('api/v1/cities/')
 export class CityController {
@@ -11,15 +11,15 @@ export class CityController {
 
     @Post()
     async createCity(
-        @Body() createCityDTO: CreateCityDTO
-    ): Promise<City> {
-        return await this.cityService.createCity(createCityDTO);
+        @Body() createCityDTOlist: CreateCityDTO[]
+    ): Promise<ICity[]> {
+        return await this.cityService.createCityList(createCityDTOlist);
     }
 
     @Get(':name')
     async findByName(
         @Param('name') name: string
-    ): Promise<City> {
+    ): Promise<ICity> {
         return await this.cityService.findByName(name);
     }
 }
