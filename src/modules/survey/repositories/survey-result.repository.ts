@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel, Model } from "nestjs-dynamoose";
-import { ISurveyResult } from "../interfaces/survey-result.interface";
+import { ISurveyResult, PartialSurveyResultOmit, SelectedSurveyFields } from "../interfaces/survey-result.interface";
 import { SurveyKey } from "src/utils/interfaces/keys";
 
 @Injectable()
@@ -11,7 +11,7 @@ export class SurveyResultRepository {
     ) {}
 
     async create(
-        surveyResult: ISurveyResult
+        surveyResult: PartialSurveyResultOmit
     ): Promise<ISurveyResult> {
         return await this.model.create( surveyResult );
     }
@@ -22,15 +22,17 @@ export class SurveyResultRepository {
         return await this.model.get( surveyId );
     }
 
-    async findByUserId(
+    async findBySurveyIdAndUserId(
+        surveyId: SurveyKey,
         userId: string
     ): Promise<ISurveyResult[]> {
-        return await this.model.query('userId').eq( userId ).exec();
-    }
+        return await this.model.query('surveyId').eq(surveyId)
+                        .and().where('userId').eq(userId)
+                        .exec();    }
 
     async update(
         surveyId: SurveyKey, 
-        updateData: Partial<ISurveyResult>
+        updateData: SelectedSurveyFields
     ): Promise<ISurveyResult> {
         return await this.model.update( surveyId, updateData );
     }

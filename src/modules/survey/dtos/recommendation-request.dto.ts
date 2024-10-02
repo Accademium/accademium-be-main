@@ -3,6 +3,6 @@ import { Type } from 'class-transformer';
 
 export class RecommendationRequestDto {
   @IsObject()
-  @Type(() => Number) 
-  answers: Record<number, number>; 
+  @Type(() => String) 
+  answers: Record<number, string>; 
 }

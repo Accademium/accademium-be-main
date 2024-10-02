@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AIClientException } from 'src/utils/exceptions/ai-client.exception';
 import { AIClientEnum } from 'src/utils/enums/ai-client.enums';
 import { HttpErrorMessage } from 'src/utils/enums/general-error-message.enum';
+import { studyFields } from '../data/survey-questions.data';
 
 @Injectable()
 export class AIClient {
@@ -20,7 +21,9 @@ export class AIClient {
       });  
   }
 
-  async getRecommendations(surveyAnswers: string, studyFields: string[]): Promise<any> {
+  async getRecommendations(
+    surveyAnswers: string
+  ): Promise<any> {
     const prompt = `Based on the answers provided in the orientation survey below, recommend three study fields from the predefined study fields that would be the most suitable for the individual. 
     Orientation Survey Questions and Answers:
     ${surveyAnswers}
@@ -49,7 +52,10 @@ export class AIClient {
     return this.getAIResponse(prompt);
   }
 
-  async getUniversityProgramRecommendations(surveyAnswers: string, universityPrograms: string[]): Promise<any> {
+  async getUniversityProgramRecommendations(
+    surveyAnswers: string, 
+    universityPrograms: string[]
+  ): Promise<any> {
     const prompt = `Based on the answers provided in the orientation survey below, recommend three university programs from the predefined university program list that would be the most suitable for the individual. 
     Orientation Survey Questions and Answers:
     ${surveyAnswers}

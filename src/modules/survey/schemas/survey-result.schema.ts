@@ -4,6 +4,7 @@ export const SurveyResultSchema = new Schema({
     surveyId: {
         type: String,
         hashKey: true,
+        required: true,
     },
     userId: {
         type: String,
@@ -11,18 +12,24 @@ export const SurveyResultSchema = new Schema({
             name: 'userIdIndex',
             type: 'global'
         },
+        required: true,
     },
     answers: {
-        type: Object,
+        type: Object
     },
-    recommendations: {
+    fieldRecommendations: {
         type: Array,
         schema: [String],
     },
+    selectedField: String,
+    programRecommendations: {
+        type: Array,
+        schema: [String],
+    },
+    selectedProgram: String,
     customerAgreement: String,
     questionsVersion: String,
 }, 
 {
-    timestamps: true,
+    timestamps: true, saveUnknown: true
 });
-  

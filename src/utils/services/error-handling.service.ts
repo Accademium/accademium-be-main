@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { AccademiumException } from '../exceptions/accademium.exception';
 import { AwsException } from '../exceptions/aws.exception';
+import { AIClientException } from '../exceptions/ai-client.exception';
+import { BaseException } from '../exceptions/base.exception';
 
 @Injectable()
 export class ErrorHandlingService {
@@ -13,7 +15,7 @@ export class ErrorHandlingService {
    * @param error
    * @param context
    */
-  handleError(error: Error, context: string): void {
+  logError(error: Error, context: string): void {
     if (error instanceof AwsException) {
       this.logger.error(
         `[AWS:${error.awsErrorCode}] ${error.message} in ${context}`,
@@ -25,16 +27,51 @@ export class ErrorHandlingService {
       );
     } else if (error instanceof AccademiumException) {
       this.logger.error(
-        `[${error.code}] ${error.message} in ${context}`,
+        `[ACCADEMIUM:${error.code}] ${error.message} in ${context}`,
+        error.stack,
+      );
+    } else if (error instanceof AIClientException){
+      this.logger.error(
+        `[${error.aiClientType}:${error.code}] ${error.message} in ${context}`,
         error.stack,
       );
     } else {
       this.logger.error(
-        `Unexpected error in ${context}: ${error.message}`,
+        `[ACCADEMIUM:UNEXPECTED_ERROR] Unexpected error in ${context}: ${error.message}`,
         error.stack,
       );
     }
-    // TODO additional error handling logic
+  }
+
+  /**
+   * Logs errors and performs any additional error handling tasks.
+   * Use this method when you want to log an error without throwing it.
+   *
+   * @param error
+   * @param context
+   */
+  logErrorAndThrow(error: Error, context: string): void {
+    this.logError(error, context);
+    throw error;
+  }
+
+  handleUnexpectedError(
+    serviceName: string,
+    methodName: string,
+    error: any
+  ): void {
+    this.logger.error(`[ACCADEMIUM:UNEXPECTED_ERROR] Unexpected error occurred in ${serviceName}.${methodName}: ${error.message || error}`);
+
+    if (error instanceof BaseException) {
+      throw error;
+    } else {
+      throw new AccademiumException(
+        `An unexpected error occurred in the ${serviceName} while processing the request. For more details, check the log.`,
+        'UNEXPECTED_ERROR',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        serviceName
+      );
+    }
   }
 
   /**

@@ -1,5 +1,5 @@
 export interface SurveyKey {
-    survey_id: string;
+    surveyId: string;
 }
 
 export interface UserKey {

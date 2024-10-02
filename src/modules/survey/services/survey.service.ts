@@ -1,16 +1,17 @@
-import { HttpCode, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { AIClient } from '../ai/ai.client';
 import { RecommendationRequestDto } from '../dtos/recommendation-request.dto';
 import { RecommedationResponseDto } from '../dtos/recommendation-response.dto';
-import { studyFields, questionAnswers, universityPrograms } from '../data/survey-questions.data';
 import { UniversityProgramResponseDto } from '../dtos/university-program-response.dto';
-import { AccademiumException } from 'src/utils/exceptions/accademium.exception';
-import { AIClientException } from 'src/utils/exceptions/ai-client.exception';
-import { error } from 'console';
 import { SurveyResultRepository } from '../repositories/survey-result.repository';
-import { ISurveyResult } from '../interfaces/survey-result.interface';
 import { CustomerAgreement } from 'src/utils/enums/survey.enums';
 import { v4 as uuidv4 } from 'uuid';
+import { ProgramCoreService } from 'src/modules/programs/services/program.core.service';
+import { PartialSurveyResultOmit, SelectedSurveyFields } from '../interfaces/survey-result.interface';
+import { SurveyKey } from 'src/utils/interfaces/keys';
+import { SurveyUtils } from '../utils/survey.utils';
+import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
+
 @Injectable()
 export class SurveyService 
 {
@@ -19,7 +20,10 @@ export class SurveyService
 
   constructor(
     private readonly aiClient: AIClient,
-    private readonly surveyResultRepository: SurveyResultRepository
+    private readonly surveyResultRepository: SurveyResultRepository,
+    private readonly programCoreService: ProgramCoreService,
+    private readonly surveyUtils: SurveyUtils,
+    private readonly errorhandlingService: ErrorHandlingService
   ) {}
 
   async processSurvey(
@@ -28,79 +32,111 @@ export class SurveyService
   ): Promise<RecommedationResponseDto> {
     try
     {
-      const surveyAnswers = this.formatSurveyAnswers(surveyRequest.answers);
-      const aiResponse = await this.aiClient.getRecommendations(surveyAnswers, studyFields);
+      const answers = surveyRequest.answers;
 
-      const surveyResult = this.createSurveyResult(userId, surveyRequest.answers, aiResponse);
-      await this.surveyResultRepository.create(surveyResult);
+      const fieldRecommendations = await this.fetchAIFieldRecommendations(answers);
 
-      return new RecommedationResponseDto(aiResponse);
+      this.saveInitialSurveyAnswers(fieldRecommendations, userId, answers);
+
+      return new RecommedationResponseDto(fieldRecommendations);
     }
     catch (error)
     {
-      this.logger.error(`Error occured during the execution of ${this.SERVICE_NAME}.processSurvey`);
-      throw error;
+      this.errorhandlingService.handleUnexpectedError(this.SERVICE_NAME, "processSurvey", error)
     }
   }
 
   async getUniversityProgramRecommendations(
-    userId: string
+    surveyId: SurveyKey,
+    userId: string,
+    field: string
   ): Promise<UniversityProgramResponseDto> {
     try
     {
-      const surveyResults = await this.surveyResultRepository.findByUserId(userId);
-      const surveyAnswers = this.formatSurveyAnswers(surveyResults[0].answers);
-      const aiResponse = await this.aiClient.getUniversityProgramRecommendations(surveyAnswers, universityPrograms);
+      const programRecommendations = await this.fetchAIProgramRecommendations(surveyId, userId, field);
 
-      return new UniversityProgramResponseDto(aiResponse);
+      this.updateSurvey(field, surveyId, programRecommendations);
+
+      return new UniversityProgramResponseDto(programRecommendations);
     }
     catch (error)
     {
-      this.logger.error(`Error occured during the execution of ${this.SERVICE_NAME}.getUniversityProgramRecommendations`);
-      throw error;
+      this.errorhandlingService.handleUnexpectedError(this.SERVICE_NAME, "getUniversityProgramRecommendations", error)
     }
   }
 
-  private formatSurveyAnswers(answers: Record<number, number>): string 
-  {
-    const questions = Object.keys(questionAnswers); 
-    return questions
-      .map((question, index) => 
-        {
-        const questionOptions = questionAnswers[question]; 
-        const answerIndex = answers[index + 1];
-        if (answerIndex !== undefined && questionOptions[answerIndex] !== undefined) 
-        {
-          return `${index + 1}. ${question}\nAnswer: ${questionOptions[answerIndex]}`;
-        } 
-        else 
-        {
-          this.logger.error(`Error occured during the formating of the survey data.`);
-          throw new AccademiumException(
-            "Failed to format the survey answers!",
-            "ANSWERS_FORMAT_FAILURE",
-            HttpStatus.BAD_REQUEST,
-            this.SERVICE_NAME,
-          );
-        }
-      }).join('\n\n');
+  private saveInitialSurveyAnswers(
+    fieldRecommendations: string[], 
+    userId: string, 
+    answers: Record<number, string>
+  ):void {
+    const surveyResult = this.createPartialSurveyResultOmit(userId, answers, fieldRecommendations);
+    this.surveyResultRepository.create(surveyResult);
   }
 
-  private createSurveyResult(
+  private updateSurvey(
+    field: string, 
+    surveyId: SurveyKey, 
+    programRecommendations: string[]
+  ): void {
+    const updatedResult = this.createSelectedSurveyField(field, programRecommendations);
+    this.surveyResultRepository.update(surveyId, updatedResult);  
+  }
+
+  private async fetchAIProgramRecommendations(
+    surveyId: SurveyKey,
     userId: string, 
-    answers: Record<number, number>, 
-    recommendations: string[]
-  ): ISurveyResult {
-    const now = new Date();
+    field: string
+  ): Promise<string[]> {
+    const formatedAnswers = await this.fetchAndFormatSuerveyAnswers(surveyId, userId);
+    const programNamesSet = await this.fetchAndFormatProgramsForField(field);
+    return await this.aiClient.getUniversityProgramRecommendations(formatedAnswers, Array.from(programNamesSet));  
+  }
+
+  private async fetchAIFieldRecommendations(
+    answers: Record<number, string>
+  ): Promise<string[]> {
+    const surveyAnswers = this.surveyUtils.formatSurveyAnswers(answers);
+    return await this.aiClient.getRecommendations(surveyAnswers);
+  }
+
+  private async fetchAndFormatSuerveyAnswers(
+    surveyId: SurveyKey, 
+    userId: string
+  ): Promise<string> {
+    const surveyResults = await this.surveyResultRepository.findBySurveyIdAndUserId(surveyId, userId);
+    return this.surveyUtils.formatSurveyAnswers(surveyResults[0].answers);
+  }
+
+  private async fetchAndFormatProgramsForField(
+    field: string
+  ): Promise<Set<string>> {
+    const programs = await this.programCoreService.getProgramsByField(field);
+    return new Set(programs.flatMap((program) => program.name));
+  }
+
+  private createPartialSurveyResultOmit(
+    userId: string, 
+    answers: Record<number, string>, 
+    fieldRecommendations: string[]
+  ): PartialSurveyResultOmit {
     return {
-      survey_id: uuidv4(),
+      surveyId: uuidv4(),
       userId,
-      answers,
-      recommendations,
+      answers: answers,
+      fieldRecommendations,
       customerAgreement: CustomerAgreement.NOT_TRACKED,
       questionsVersion: "1.0",
-      createdAt: now,
-      updatedAt: now,
+    };
+  }
+
+  private createSelectedSurveyField(
+    selectedField: string, 
+    programRecommendations: string[]
+  ): SelectedSurveyFields {
+    return {
+      selectedField: selectedField,
+      programRecommendations: programRecommendations,
     };
   }
 }
