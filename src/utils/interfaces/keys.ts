@@ -7,7 +7,7 @@ export interface UserKey {
 }
 
 export interface ProgramKey {
-    program_id: string;
+    programId: string;
 }
 
 export interface CityKey {
@@ -15,9 +15,9 @@ export interface CityKey {
 }
 
 export interface DocumentKey{
-    document_id: string;
+    documentId: string;
 }
 
 export interface ApplicationKey {
-    application_id: string;
+    applicationId: string;
 }

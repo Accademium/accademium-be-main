@@ -3,22 +3,26 @@ import { ProgramKey } from "src/utils/interfaces/keys";
 export interface ProgramDetails extends ProgramKey {
   address: string;
   city: string;
-  dates_2025: {
-    [key: string]: string;
+  dates: {
+    START_DATE: string;
+    DEADLINE_EU: string;
+    DEADLINE_NON_EU: string;
   };
   description: string;
   duration: string;
   ects: string;
   fees: {
-    [key: string]: string;
+    EU: string;
+    INSTITUTIONAL: string;
+    NON_EU: string;
   };
   field: string;
-  institution_link: string;
-  institution_logo: string;
-  institution_name: string;
+  institutionLink: string;
+  institutionLogo: string;
+  institutionName: string;
   language: string;
   link: string;
   sector: string;
-  study_type: string;
+  studyType: string;
   title: string;
 }

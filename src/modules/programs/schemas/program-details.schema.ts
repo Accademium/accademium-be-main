@@ -1,18 +1,18 @@
 import { Schema } from "dynamoose/dist/Schema";
 
 export const ProgramDetailsSchema = new Schema({
-  program_id: {
+  programId: {
     type: String,
     hashKey: true,
   },
   address: String,
   city: String,
-  dates_2025: {
+  dates: {
     type: Object,
     schema: {
-      eu: String,
-      non_eu: String,
-      start_date: String
+      DEADLINE_EU: String,
+      DEADLINE_NON_EU: String,
+      START_DATE: String
     },
   },
   description: String,
@@ -21,9 +21,9 @@ export const ProgramDetailsSchema = new Schema({
   fees: {
     type: Object,
     schema: {
-      eu: String,
-      institutional: String,
-      non_eu: String,
+      EU: String,
+      INSTITUTIONAL: String,
+      NON_EU: String,
     },
   },
   field: String,

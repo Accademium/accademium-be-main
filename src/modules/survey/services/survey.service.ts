@@ -112,7 +112,7 @@ export class SurveyService
     field: string
   ): Promise<Set<string>> {
     const programs = await this.programCoreService.getProgramsByField(field);
-    return new Set(programs.flatMap((program) => program.name));
+    return new Set(programs.flatMap((program) => program.title));
   }
 
   private createPartialSurveyResultOmit(

@@ -21,10 +21,11 @@ export class ProgramDetailsController {
   // TODO: Add @UseGuards(JwtAuthGuard) for authentication
   // TODO: Add @Roles(Role.ADMIN) for authorization
   @Post()
-  async createProgramDetails(
-    @Body() programDetails: ProgramDetails,
-  ): Promise<ProgramDetails> {
-    return this.programDetailsService.createProgramDetails(programDetails);
+  async createProgramDetailsList(
+    @Body() programDetailsList: ProgramDetails[],
+  ): Promise<void> {
+    console.log("start")
+    this.programDetailsService.createProgramDetailsList(programDetailsList);
   }
 
   // TODO: Replace ProgramDetails with DTO

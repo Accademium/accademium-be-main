@@ -29,15 +29,26 @@ export class ProgramCoreService {
     }
   }
 
+  async createProgramCoreList(
+    programCoreList: ProgramCore[]
+  ): Promise<void> {
+    this.logger.log(`[ACCADEMIUM:ADMIN] New chunk with project-core data (${programCoreList.length} objects) is being processed.`);
+    await Promise.all(
+      programCoreList.map(async (programCore) => {
+        await this.createProgramCore(programCore);  
+      })
+    );
+  }
+
   async createProgramCore(
     programCore: ProgramCore
-  ): Promise<ProgramCore> {
+  ): Promise<ProgramCore> { //TODO create retry on ProvisionedThroughputExceededException
     try {
       return await this.programCoreRepository.create(programCore);
     } catch (error) {
       throw this.handleDynamoError(
         error,
-        'Failed to create program core',
+        `Failed to create program core with id ${programCore.programId}`,
         'CREATE_PROGRAM_CORE_ERROR',
       );
     }
@@ -66,7 +77,7 @@ export class ProgramCoreService {
   ): Promise<ProgramCore[]> {
     try 
     {
-      return await this.programCoreRepository.findByField(field);
+      return await this.programCoreRepository.findByStudyType("Bachelor");
     } 
     catch (error) 
     {
@@ -86,7 +97,7 @@ export class ProgramCoreService {
    * @param code - The specific error code corresponding to the operation that failed.
    * @throws {AwsException} Re-throws the error with a custom message and code.
    */
-  private handleDynamoError(
+  private handleDynamoError(  //TODO move to exception service
     error: AwsException,
     message: string,
     code: string,

@@ -1,7 +1,7 @@
 import { Schema } from "dynamoose/dist/Schema";
 
 export const ProgramCoreSchema = new Schema ({
-  program_id: {
+  programId: {
     type: String,
     hashKey: true,
   },
@@ -10,13 +10,16 @@ export const ProgramCoreSchema = new Schema ({
     type: Array,
     schema: [String],
   },
-  field_tags: {
-    type: Array,
-    schema: [String],
-  },
-  name: {
-    type: [String, Array],
-    schema: [String],
-  },
+  programName: String,
   title: String,
+  studyType: {
+    type: String,
+    index: {
+        name: 'StudyTypeIndex',
+        type: 'global'
+    },
+    required: true,
+  },
+  language: String,
+  sector: String,
 });

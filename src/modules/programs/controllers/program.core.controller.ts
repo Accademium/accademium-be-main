@@ -1,11 +1,13 @@
-import { Controller, Get, Put, Body, Param } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Post } from '@nestjs/common';
 import { ProgramCoreService } from '../services/program.core.service';
 import { ProgramCore } from '../interfaces/program-core.interface';
 import { ProgramKey } from 'src/utils/interfaces/keys';
 
 @Controller('api/v1/program-core/')
 export class ProgramCoreController {
-  constructor(private readonly programCoreService: ProgramCoreService) {}
+  constructor(
+    private readonly programCoreService: ProgramCoreService
+  ) {}
 
   @Get(':id')
   async getProgramCore(
@@ -23,11 +25,19 @@ export class ProgramCoreController {
     @Param('id') key: ProgramKey,
     @Body() program: Partial<ProgramCore>,
   ): Promise<ProgramCore> {
+
     return await this.programCoreService.updateProgramCore(key, program);
   }
 
   @Get('by-field/:field')
   async getProgramsByField(@Param('field') field: string): Promise<ProgramCore[]>{
     return await this.programCoreService.getProgramsByField(field);
+  }
+
+  @Post()
+  async createProgramCoreList(
+    @Body() programCoreList: ProgramCore[]
+  ): Promise<void>{
+    await this.programCoreService.createProgramCoreList(programCoreList);
   }
 }

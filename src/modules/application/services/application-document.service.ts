@@ -55,7 +55,7 @@ export class ApplicationDocumentService {
   ): Promise<ApplicationDocument> {
     const newDocument: ApplicationDocument = {
       ...documentData,
-      document_id: uuidv4(),
+      documentId: uuidv4(),
       applicationId,
       uploadDate: new Date(),
     };

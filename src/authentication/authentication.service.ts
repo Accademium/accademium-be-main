@@ -1,5 +1,3 @@
-// src/auth/auth.service.ts
-
 import { Injectable } from '@nestjs/common';
 import { CognitoService } from '../aws/cognito/cognito-client.service';
 import { JwtService } from '@nestjs/jwt';

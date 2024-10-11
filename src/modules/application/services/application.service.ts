@@ -67,7 +67,7 @@ export class ApplicationService {
   ): Promise<Application> {
     const newApplication: Application = {
       ...applicationData,
-      application_id: uuidv4(),
+      applicationId: uuidv4(),
       user_id: userId,
       creationDate: new Date(),
       lastUpdatedDate: new Date(),

@@ -19,7 +19,6 @@ export class ProgramDetailsService {
     key: ProgramKey
   ): Promise<ProgramDetails> {
     try {
-      console.log(key)
       return await this.programDetailsRepository.get(key);
     } catch (error) {
       throw this.handleDynamoError(
@@ -30,10 +29,31 @@ export class ProgramDetailsService {
     }
   }
 
+  async createProgramDetailsList(
+    programDetailsList: ProgramDetails[]
+  ): Promise<void> {
+    this.logger.log(`[ACCADEMIUM:ADMIN] New chunk with project-details data (${programDetailsList.length} objects) is being processed.`);
+    await Promise.all(
+      programDetailsList.map(async (programCore) => {
+        await this.createProgramDetails(programCore);  
+      })
+    );
+  }
+
   async createProgramDetails(
     programDetails: ProgramDetails,
-  ): Promise<ProgramDetails> {
-    return await this.programDetailsRepository.create(programDetails);
+  ): Promise<ProgramDetails> { //TODO create retry on ProvisionedThroughputExceededException
+    try {
+      return await this.programDetailsRepository.create(programDetails);
+    } catch (error) {
+      this.logger.error(error.message);
+      this.logger.error(error);
+      // throw this.handleDynamoError(
+      //   error,
+      //   `Failed to create program details with id ${programDetails.programId}`,
+      //   'CREATE_PROGRAM_DETAILS_ERROR',
+      // );
+    }
   }
 
   async updateProgramDetails(
@@ -64,7 +84,7 @@ export class ProgramDetailsService {
    * @param code - The specific error code corresponding to the operation that failed.
    * @throws {AwsException} Re-throws the error with a custom message and code.
    */
-    private handleDynamoError(
+    private handleDynamoError(  //TODO move to exception service
         error: AwsException,
         message: string,
         code: string,

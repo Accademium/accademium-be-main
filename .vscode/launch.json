@@ -7,11 +7,11 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug Program",
+            "name": "Launch Program",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\src\\authentication\\authentication.controller.ts",
+            "program": "${workspaceFolder}\\src\\modules\\programs\\repositories\\program.core.repository.ts",
             "preLaunchTask": "tsc: build - tsconfig.json",
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
