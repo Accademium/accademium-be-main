@@ -8,7 +8,6 @@ export const CitySchema = new Schema({
   name: {
     type: String,
     required: true,
-    
   },
   description: String,
   housingAvailability: {

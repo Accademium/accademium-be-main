@@ -1,4 +1,4 @@
-import { isEmail, IsEmail, IsString } from 'class-validator';
+import { IsEmail, IsString } from 'class-validator';
 
 export class RegistrationRequest {
   @IsString()

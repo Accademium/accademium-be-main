@@ -30,7 +30,7 @@ export class ErrorHandlingService {
         `[ACCADEMIUM:${error.code}] ${error.message} in ${context}`,
         error.stack,
       );
-    } else if (error instanceof AIClientException){
+    } else if (error instanceof AIClientException) {
       this.logger.error(
         `[${error.aiClientType}:${error.code}] ${error.message} in ${context}`,
         error.stack,
@@ -58,9 +58,11 @@ export class ErrorHandlingService {
   handleUnexpectedError(
     serviceName: string,
     methodName: string,
-    error: any
+    error: any,
   ): void {
-    this.logger.error(`[ACCADEMIUM:UNEXPECTED_ERROR] Unexpected error occurred in ${serviceName}.${methodName}: ${error.message || error}`);
+    this.logger.error(
+      `[ACCADEMIUM:UNEXPECTED_ERROR] Unexpected error occurred in ${serviceName}.${methodName}: ${error.message || error}`,
+    );
 
     if (error instanceof BaseException) {
       throw error;
@@ -69,7 +71,7 @@ export class ErrorHandlingService {
         `An unexpected error occurred in the ${serviceName} while processing the request. For more details, check the log.`,
         'UNEXPECTED_ERROR',
         HttpStatus.INTERNAL_SERVER_ERROR,
-        serviceName
+        serviceName,
       );
     }
   }

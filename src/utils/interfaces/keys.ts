@@ -1,23 +1,23 @@
 export interface SurveyKey {
-    surveyId: string;
+  surveyId: string;
 }
 
 export interface UserKey {
-    user_id: string;
+  user_id: string;
 }
 
 export interface ProgramKey {
-    programId: string;
+  programId: string;
 }
 
 export interface CityKey {
-    city_id: string;
+  city_id: string;
 }
 
-export interface DocumentKey{
-    documentId: string;
+export interface DocumentKey {
+  documentId: string;
 }
 
 export interface ApplicationKey {
-    applicationId: string;
+  applicationId: string;
 }

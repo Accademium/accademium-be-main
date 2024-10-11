@@ -16,31 +16,25 @@ import { applicationDocumentSchema } from './schemas/application-document.schema
         name: 'Application',
         schema: applicationSchema,
         options: {
-          tableName: 'applications'
+          tableName: 'applications',
         },
       },
       {
         name: 'ApplicationDocument',
         schema: applicationDocumentSchema,
         options: {
-          tableName: 'application_documents'
+          tableName: 'application_documents',
         },
       },
     ]),
   ],
-  controllers: [
-    ApplicationController, 
-    ApplicationDocumentController
-  ],
+  controllers: [ApplicationController, ApplicationDocumentController],
   providers: [
     ApplicationService,
     ApplicationDocumentService,
     ApplicationRepository,
     ApplicationDocumentRepository,
   ],
-  exports: [
-    ApplicationService, 
-    ApplicationDocumentService
-  ],
+  exports: [ApplicationService, ApplicationDocumentService],
 })
 export class ApplicationModule {}

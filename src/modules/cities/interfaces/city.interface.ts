@@ -1,5 +1,5 @@
-import { CountryEnum } from "src/utils/enums/country.enum";
-import { CityKey } from "src/utils/interfaces/keys";
+import { CountryEnum } from 'src/utils/enums/country.enum';
+import { CityKey } from 'src/utils/interfaces/keys';
 
 export interface ICity extends CityKey {
   name: string;

@@ -6,18 +6,14 @@ import { ApplicationKey, UserKey } from 'src/utils/interfaces/keys';
 
 @Injectable()
 export class ApplicationService {
-  constructor(
-    private readonly applicationRepository: ApplicationRepository
-  ) {}
+  constructor(private readonly applicationRepository: ApplicationRepository) {}
 
   /**
    * Get all applications for a user
    * @param userId - The ID of the user
    * @returns Promise<Application[]> - A list of applications
    */
-  async getAllApplicationsForUser(
-    userId: UserKey
-  ): Promise<Application[]> {
+  async getAllApplicationsForUser(userId: UserKey): Promise<Application[]> {
     return this.applicationRepository.findAllByUserId(userId);
   }
 
@@ -29,12 +25,18 @@ export class ApplicationService {
    * @throws NotFoundException if the application is not found
    */
   async getApplicationForUser(
-    userId: UserKey, 
-    applicationId: ApplicationKey
+    userId: UserKey,
+    applicationId: ApplicationKey,
   ): Promise<Application> {
-    const application = await this.applicationRepository.findByUserIdAndApplicationId(userId, applicationId);
+    const application =
+      await this.applicationRepository.findByUserIdAndApplicationId(
+        userId,
+        applicationId,
+      );
     if (!application) {
-      throw new NotFoundException(`Application with ID ${applicationId} not found for user ${userId}`);
+      throw new NotFoundException(
+        `Application with ID ${applicationId} not found for user ${userId}`,
+      );
     }
     return application;
   }
@@ -48,9 +50,9 @@ export class ApplicationService {
    * @throws NotFoundException if the application is not found
    */
   async updateApplicationStatus(
-    userId: UserKey, 
-    applicationId: ApplicationKey, 
-    status: string
+    userId: UserKey,
+    applicationId: ApplicationKey,
+    status: string,
   ): Promise<Application> {
     return this.applicationRepository.updateStatus(applicationId, null);
   }
@@ -62,8 +64,11 @@ export class ApplicationService {
    * @returns Promise<Application> - The created application
    */
   async createApplication(
-    userId: UserKey, 
-    applicationData: Omit<Application, 'userId' | 'applicationId' | 'creationDate' | 'lastUpdatedDate'>
+    userId: UserKey,
+    applicationData: Omit<
+      Application,
+      'userId' | 'applicationId' | 'creationDate' | 'lastUpdatedDate'
+    >,
   ): Promise<Application> {
     const newApplication: Application = {
       ...applicationData,
@@ -71,7 +76,7 @@ export class ApplicationService {
       user_id: userId,
       creationDate: new Date(),
       lastUpdatedDate: new Date(),
-      status: 'In Progress' //TODO replace with constant
+      status: 'In Progress', //TODO replace with constant
     };
     return this.applicationRepository.save(newApplication);
   }

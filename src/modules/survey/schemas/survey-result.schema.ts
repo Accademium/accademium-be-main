@@ -1,35 +1,38 @@
-import { Schema } from "dynamoose";
+import { Schema } from 'dynamoose';
 
-export const SurveyResultSchema = new Schema({
+export const SurveyResultSchema = new Schema(
+  {
     surveyId: {
-        type: String,
-        hashKey: true,
-        required: true,
+      type: String,
+      hashKey: true,
+      required: true,
     },
     userId: {
-        type: String,
-        index: {
-            name: 'userIdIndex',
-            type: 'global'
-        },
-        required: true,
+      type: String,
+      index: {
+        name: 'userIdIndex',
+        type: 'global',
+      },
+      required: true,
     },
     answers: {
-        type: Object
+      type: Object,
     },
     fieldRecommendations: {
-        type: Array,
-        schema: [String],
+      type: Array,
+      schema: [String],
     },
     selectedField: String,
     programRecommendations: {
-        type: Array,
-        schema: [String],
+      type: Array,
+      schema: [String],
     },
     selectedProgram: String,
     customerAgreement: String,
     questionsVersion: String,
-}, 
-{
-    timestamps: true, saveUnknown: true
-});
+  },
+  {
+    timestamps: true,
+    saveUnknown: true,
+  },
+);

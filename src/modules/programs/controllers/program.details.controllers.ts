@@ -10,10 +10,9 @@ export class ProgramDetailsController {
   // TODO: Replace ProgramDetails with DTO
   @Get(':id')
   async getProgramDetails(
-    @Param('id') key: ProgramKey
-  ): Promise<ProgramDetails> 
-  {
-    console.log("Controller Details: " + key)
+    @Param('id') key: ProgramKey,
+  ): Promise<ProgramDetails> {
+    console.log('Controller Details: ' + key);
     return await this.programDetailsService.getProgramDetails(key);
   }
 
@@ -24,7 +23,7 @@ export class ProgramDetailsController {
   async createProgramDetailsList(
     @Body() programDetailsList: ProgramDetails[],
   ): Promise<void> {
-    console.log("start")
+    console.log('start');
     this.programDetailsService.createProgramDetailsList(programDetailsList);
   }
 

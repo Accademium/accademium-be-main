@@ -1,4 +1,4 @@
-import { Schema } from "dynamoose/dist/Schema";
+import { Schema } from 'dynamoose/dist/Schema';
 
 export const ProgramDetailsSchema = new Schema({
   programId: {
@@ -12,7 +12,7 @@ export const ProgramDetailsSchema = new Schema({
     schema: {
       DEADLINE_EU: String,
       DEADLINE_NON_EU: String,
-      START_DATE: String
+      START_DATE: String,
     },
   },
   description: String,

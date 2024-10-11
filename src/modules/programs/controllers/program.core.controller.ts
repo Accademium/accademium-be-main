@@ -5,16 +5,10 @@ import { ProgramKey } from 'src/utils/interfaces/keys';
 
 @Controller('api/v1/program-core/')
 export class ProgramCoreController {
-  constructor(
-    private readonly programCoreService: ProgramCoreService
-  ) {}
+  constructor(private readonly programCoreService: ProgramCoreService) {}
 
   @Get(':id')
-  async getProgramCore(
-    @Param('id') key: ProgramKey
-  ): Promise<ProgramCore> 
-  {
-    console.log("Controller core: " + key)
+  async getProgramCore(@Param('id') key: ProgramKey): Promise<ProgramCore> {
     return await this.programCoreService.getProgramCore(key);
   }
 
@@ -25,19 +19,21 @@ export class ProgramCoreController {
     @Param('id') key: ProgramKey,
     @Body() program: Partial<ProgramCore>,
   ): Promise<ProgramCore> {
-
     return await this.programCoreService.updateProgramCore(key, program);
   }
 
-  @Get('by-field/:field')
-  async getProgramsByField(@Param('field') field: string): Promise<ProgramCore[]>{
-    return await this.programCoreService.getProgramsByField(field);
+  @Get(':field/:type') // Only for test purpose
+  async getBachelorProgramsByField(
+    @Param('field') field: string,
+    @Param('type') type: string,
+  ): Promise<ProgramCore[]> {
+    return await this.programCoreService.getProgramsByField(field, type);
   }
 
   @Post()
   async createProgramCoreList(
-    @Body() programCoreList: ProgramCore[]
-  ): Promise<void>{
+    @Body() programCoreList: ProgramCore[],
+  ): Promise<void> {
     await this.programCoreService.createProgramCoreList(programCoreList);
   }
 }

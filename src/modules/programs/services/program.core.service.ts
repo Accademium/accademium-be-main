@@ -15,9 +15,7 @@ export class ProgramCoreService {
     private errorHandlingService: ErrorHandlingService,
   ) {}
 
-  async getProgramCore(
-    key: ProgramKey
-  ): Promise<ProgramCore> {
+  async getProgramCore(key: ProgramKey): Promise<ProgramCore> {
     try {
       return await this.programCoreRepository.get(key);
     } catch (error) {
@@ -29,20 +27,19 @@ export class ProgramCoreService {
     }
   }
 
-  async createProgramCoreList(
-    programCoreList: ProgramCore[]
-  ): Promise<void> {
-    this.logger.log(`[ACCADEMIUM:ADMIN] New chunk with project-core data (${programCoreList.length} objects) is being processed.`);
+  async createProgramCoreList(programCoreList: ProgramCore[]): Promise<void> {
+    this.logger.log(
+      `[ACCADEMIUM:ADMIN] New chunk with project-core data (${programCoreList.length} objects) is being processed.`,
+    );
     await Promise.all(
       programCoreList.map(async (programCore) => {
-        await this.createProgramCore(programCore);  
-      })
+        await this.createProgramCore(programCore);
+      }),
     );
   }
 
-  async createProgramCore(
-    programCore: ProgramCore
-  ): Promise<ProgramCore> { //TODO create retry on ProvisionedThroughputExceededException
+  async createProgramCore(programCore: ProgramCore): Promise<ProgramCore> {
+    //TODO create retry on ProvisionedThroughputExceededException
     try {
       return await this.programCoreRepository.create(programCore);
     } catch (error) {
@@ -58,12 +55,9 @@ export class ProgramCoreService {
     key: ProgramKey,
     program: Partial<ProgramCore>,
   ): Promise<ProgramCore> {
-    try 
-    {
+    try {
       return await this.programCoreRepository.update(key, program);
-    } 
-    catch (error) 
-    {
+    } catch (error) {
       throw this.handleDynamoError(
         error,
         'Failed to update program core',
@@ -73,14 +67,17 @@ export class ProgramCoreService {
   }
 
   async getProgramsByField(
-    field: string
+    field: string,
+    type: string,
   ): Promise<ProgramCore[]> {
-    try 
-    {
-      return await this.programCoreRepository.findByStudyType("Bachelor");
-    } 
-    catch (error) 
-    {
+    try {
+      const bachelorPrograms =
+        await this.programCoreRepository.findByStudyType(type);
+      const filteredPrograms = bachelorPrograms.filter((program) =>
+        program.fields.includes(field),
+      );
+      return filteredPrograms;
+    } catch (error) {
       console.error('Failed to get programs by field', error);
       throw this.handleDynamoError(
         error,
@@ -97,7 +94,8 @@ export class ProgramCoreService {
    * @param code - The specific error code corresponding to the operation that failed.
    * @throws {AwsException} Re-throws the error with a custom message and code.
    */
-  private handleDynamoError(  //TODO move to exception service
+  private handleDynamoError(
+    // TODO move to exception service
     error: AwsException,
     message: string,
     code: string,

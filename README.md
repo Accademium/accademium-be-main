@@ -1,6 +1,7 @@
 # University Application System
 
 ## Table of Contents
+
 1. [Introduction](#introduction)
 2. [System Architecture](#system-architecture)
 3. [Database](#database)

@@ -1,6 +1,6 @@
-import { HttpCode, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
-import { OpenAI } from "openai";
+import { OpenAI } from 'openai';
 import { ConfigService } from '@nestjs/config';
 import { AIClientException } from 'src/utils/exceptions/ai-client.exception';
 import { AIClientEnum } from 'src/utils/enums/ai-client.enums';
@@ -13,25 +13,21 @@ export class AIClient {
   private readonly logger = new Logger(AIClient.name);
   private readonly openai: OpenAI;
 
-  constructor(
-      private configService: ConfigService
-  ) {
-      this.openai = new OpenAI({
-          apiKey: this.configService.get<string>('OPENAI_API_KEY'),
-      });  
+  constructor(private configService: ConfigService) {
+    this.openai = new OpenAI({
+      apiKey: this.configService.get<string>('OPENAI_API_KEY'),
+    });
   }
 
-  async getRecommendations(
-    surveyAnswers: string
-  ): Promise<any> {
-    const prompt = `Based on the answers provided in the orientation survey below, recommend three study fields from the predefined study fields that would be the most suitable for the individual. 
+  async getRecommendations(surveyAnswers: string): Promise<any> {
+    const prompt = `Based on the answers provided in the orientation survey below, recommend three study fields from the predefined study fields that would be the most suitable for the individual.
     Orientation Survey Questions and Answers:
     ${surveyAnswers}
-
+    
     Predefined Study Fields: ${studyFields.join(', ')}
-
-    Please provide the recommendations in the following JSON format:
-
+    
+    Please provide the recommendations in the following JSON format without any code block markers or additional formatting. Only return the JSON object:
+    
     {
         "recommendations": [
             {
@@ -53,8 +49,8 @@ export class AIClient {
   }
 
   async getUniversityProgramRecommendations(
-    surveyAnswers: string, 
-    universityPrograms: string[]
+    surveyAnswers: string,
+    universityPrograms: string[],
   ): Promise<any> {
     const prompt = `Based on the answers provided in the orientation survey below, recommend three university programs from the predefined university program list that would be the most suitable for the individual. 
     Orientation Survey Questions and Answers:
@@ -62,7 +58,7 @@ export class AIClient {
 
     Predefined University Programs: ${universityPrograms.join(', ')}
 
-    Please provide the recommendations in the following JSON format:
+    Please provide the recommendations in the following JSON format without any code block markers or additional formatting. Only return the JSON object:
 
     {
         "program_recommendations": [
@@ -85,13 +81,12 @@ export class AIClient {
   }
 
   private async getAIResponse(prompt: string): Promise<any> {
-    try
-    {
+    try {
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini-2024-07-18',
         messages: [
           {
-            role: 'system', 
+            role: 'system',
             content: 'You are an expert in education and career counseling.',
           },
           {
@@ -99,32 +94,33 @@ export class AIClient {
             content: prompt,
           },
         ],
-        temperature: 0.2
+        temperature: 0.2,
       });
 
       if (response?.choices?.[0]?.message?.content) {
         return JSON.parse(response.choices[0].message.content);
       } else {
-        const errMsg = "Invalid response format was received from OpenAI. " + response.choices[0].message.content;
+        const errMsg =
+          'Invalid response format was received from OpenAI. ' +
+          response.choices[0].message.content;
         this.logger.error(errMsg);
         throw new AIClientException(
           errMsg,
           HttpErrorMessage.IVALID_RESPONSE_FORMAT,
           HttpStatus.BAD_REQUEST,
           this.SERVICE_NAME,
-          AIClientEnum.GPT_3_5
+          AIClientEnum.GPT_3_5,
         );
-      }    
-    }
-    catch (error) {
+      }
+    } catch (error) {
       const errMsg = 'Error was received from OpenAI-API. ' + error;
       this.logger.error(errMsg);
       throw new AIClientException(
         errMsg,
-        "OPEN_AI_ERROR",
+        'OPEN_AI_ERROR',
         HttpStatus.BAD_REQUEST,
         this.SERVICE_NAME,
-        AIClientEnum.GPT_3_5
+        AIClientEnum.GPT_3_5,
       );
     }
   }

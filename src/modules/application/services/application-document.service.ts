@@ -6,7 +6,9 @@ import { ApplicationKey, DocumentKey } from 'src/utils/interfaces/keys.js';
 
 @Injectable()
 export class ApplicationDocumentService {
-    constructor(private readonly applicationDocumentRepository: ApplicationDocumentRepository) {}
+  constructor(
+    private readonly applicationDocumentRepository: ApplicationDocumentRepository,
+  ) {}
 
   /**
    * Get all documents for an application
@@ -14,9 +16,11 @@ export class ApplicationDocumentService {
    * @returns Promise<ApplicationDocument[]> - A list of application documents
    */
   async getAllDocumentsForApplication(
-    applicationId: ApplicationKey
+    applicationId: ApplicationKey,
   ): Promise<ApplicationDocument[]> {
-    return this.applicationDocumentRepository.findAllByApplicationId(applicationId);
+    return this.applicationDocumentRepository.findAllByApplicationId(
+      applicationId,
+    );
   }
 
   /**
@@ -27,10 +31,13 @@ export class ApplicationDocumentService {
    * @throws NotFoundException if the document is not found
    */
   async getDocumentDetails(
-    applicationId: ApplicationKey, 
-    documentId: DocumentKey
+    applicationId: ApplicationKey,
+    documentId: DocumentKey,
   ): Promise<ApplicationDocument> {
-    return this.applicationDocumentRepository.findByDocumentId(applicationId, documentId);
+    return this.applicationDocumentRepository.findByDocumentId(
+      applicationId,
+      documentId,
+    );
   }
 
   /**
@@ -42,16 +49,23 @@ export class ApplicationDocumentService {
    * @throws NotFoundException if the document is not found
    */
   async updateDocumentApprovalStatus(
-    applicationId: ApplicationKey, 
-    documentId: DocumentKey, 
-    approvalStatus: string
+    applicationId: ApplicationKey,
+    documentId: DocumentKey,
+    approvalStatus: string,
   ): Promise<ApplicationDocument> {
-    return this.applicationDocumentRepository.updateApprovalStatus(applicationId, documentId, approvalStatus);
+    return this.applicationDocumentRepository.updateApprovalStatus(
+      applicationId,
+      documentId,
+      approvalStatus,
+    );
   }
 
   async createApplicationDocument(
-    applicationId: ApplicationKey, 
-    documentData: Omit<ApplicationDocument, 'documentId' | 'applicationId' | 'uploadDate'>
+    applicationId: ApplicationKey,
+    documentData: Omit<
+      ApplicationDocument,
+      'documentId' | 'applicationId' | 'uploadDate'
+    >,
   ): Promise<ApplicationDocument> {
     const newDocument: ApplicationDocument = {
       ...documentData,

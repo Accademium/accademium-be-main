@@ -1,4 +1,4 @@
-import { ProgramKey } from "src/utils/interfaces/keys";
+import { ProgramKey } from 'src/utils/interfaces/keys';
 
 export interface ProgramDetails extends ProgramKey {
   address: string;

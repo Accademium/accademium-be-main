@@ -16,25 +16,20 @@ import { ErrorHandlingService } from 'src/utils/services/error-handling.service'
       {
         name: 'ProgramDetails',
         schema: ProgramDetailsSchema,
-        options: 
-        {
+        options: {
           tableName: 'program_details',
         },
       },
       {
         name: 'ProgramsCore',
         schema: ProgramCoreSchema,
-        options: 
-        {
-          tableName: 'programs_core'
+        options: {
+          tableName: 'programs_core',
         },
       },
     ]),
   ],
-  controllers: [
-    ProgramDetailsController, 
-    ProgramCoreController
-  ],
+  controllers: [ProgramDetailsController, ProgramCoreController],
   providers: [
     ProgramDetailsService,
     ProgramCoreService,
@@ -42,9 +37,6 @@ import { ErrorHandlingService } from 'src/utils/services/error-handling.service'
     ProgramCoreRepository,
     ErrorHandlingService,
   ],
-  exports: [
-    ProgramDetailsService, 
-    ProgramCoreService
-  ],
+  exports: [ProgramDetailsService, ProgramCoreService],
 })
 export class ProgramsModule {}

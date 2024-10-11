@@ -7,18 +7,21 @@ import { ApplicationKey, DocumentKey } from 'src/utils/interfaces/keys';
 export class ApplicationDocumentRepository {
   constructor(
     @InjectModel('ApplicationDocument')
-    private applicationDocumentModel: Model<ApplicationDocument, DocumentKey>
+    private applicationDocumentModel: Model<ApplicationDocument, DocumentKey>,
   ) {}
-  
+
   /**
    * Find all documents for a specific application
    * @param applicationId - The ID of the application
    * @returns Promise<ApplicationDocument[]> - A list of application documents
    */
   async findAllByApplicationId(
-    applicationId: ApplicationKey
+    applicationId: ApplicationKey,
   ): Promise<ApplicationDocument[]> {
-    return this.applicationDocumentModel.query('applicationId').eq(applicationId).exec();
+    return this.applicationDocumentModel
+      .query('applicationId')
+      .eq(applicationId)
+      .exec();
   }
 
   /**
@@ -28,8 +31,8 @@ export class ApplicationDocumentRepository {
    * @returns Promise<ApplicationDocument | null> - The document or null if not found
    */
   async findByDocumentId(
-    applicationId: ApplicationKey, 
-    documentId: DocumentKey
+    applicationId: ApplicationKey,
+    documentId: DocumentKey,
   ): Promise<ApplicationDocument> {
     return null;
     // return this.applicationDocumentModel.query('applicationId').eq(applicationId).where('documentId').eq(documentId).exec();
@@ -43,19 +46,17 @@ export class ApplicationDocumentRepository {
    * @returns Promise<ApplicationDocument | null> - The updated document or null if not found
    */
   async updateApprovalStatus(
-    applicationId: ApplicationKey, 
-    documentId: DocumentKey, 
-    approvalStatus: string
+    applicationId: ApplicationKey,
+    documentId: DocumentKey,
+    approvalStatus: string,
   ): Promise<ApplicationDocument> {
     return null;
     // return this.applicationDocumentModel.update(
-    //   { applicationId, documentId }, 
+    //   { applicationId, documentId },
     //   { approvalStatus, approvalDate: new Date() });
   }
 
-  async save(
-    document: ApplicationDocument
-  ): Promise<ApplicationDocument> {
+  async save(document: ApplicationDocument): Promise<ApplicationDocument> {
     return this.applicationDocumentModel.create(document);
   }
 }

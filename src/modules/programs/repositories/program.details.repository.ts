@@ -10,16 +10,12 @@ export class ProgramDetailsRepository {
     private programDetailsModel: Model<ProgramDetails, ProgramKey>,
   ) {}
 
-  async get(
-    key: ProgramKey
-  ): Promise<ProgramDetails> {
-    console.log("Details: " + key)
+  async get(key: ProgramKey): Promise<ProgramDetails> {
+    console.log('Details: ' + key);
     return await this.programDetailsModel.get(key);
   }
 
-  async create(
-    programDetails: ProgramDetails
-  ): Promise<ProgramDetails> {
+  async create(programDetails: ProgramDetails): Promise<ProgramDetails> {
     return await this.programDetailsModel.create(programDetails);
   }
 
@@ -30,9 +26,10 @@ export class ProgramDetailsRepository {
     return await this.programDetailsModel.update(key, program);
   }
 
-  async findByStudyType(
-    study_type: string
-  ): Promise<ProgramDetails[]> {
-    return await this.programDetailsModel.scan('study_type').eq(study_type).exec();
+  async findByStudyType(study_type: string): Promise<ProgramDetails[]> {
+    return await this.programDetailsModel
+      .scan('study_type')
+      .eq(study_type)
+      .exec();
   }
 }

@@ -17,18 +17,11 @@ import { CityRepository } from './repositories/city.repository';
           update: false,
           waitForActive: false,
         },
-      }
+      },
     ]),
   ],
-  controllers: [
-    CityController,
-  ],
-  providers: [
-    CityService,
-    CityRepository,
-  ],
-  exports: [
-    CityService
-  ],
+  controllers: [CityController],
+  providers: [CityService, CityRepository],
+  exports: [CityService],
 })
 export class CityModule {}

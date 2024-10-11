@@ -10,27 +10,25 @@ import { SurveyUtils } from './utils/survey.utils';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
 
 @Module({
-  imports : [
+  imports: [
     DynamooseModule.forFeature([
-    {
-      name: 'SurveyAnswers',
-      schema: SurveyResultSchema,
-      options: {
-        tableName: 'survey_answers'
+      {
+        name: 'SurveyAnswers',
+        schema: SurveyResultSchema,
+        options: {
+          tableName: 'survey_answers',
+        },
       },
-    },
-  ]),
-  ProgramsModule
-],
-  controllers: [
-    SurveyController
+    ]),
+    ProgramsModule,
   ],
+  controllers: [SurveyController],
   providers: [
-    SurveyService, 
+    SurveyService,
     AIClient,
     SurveyResultRepository,
     SurveyUtils,
-    ErrorHandlingService
+    ErrorHandlingService,
   ],
 })
 export class SurveyModule {}

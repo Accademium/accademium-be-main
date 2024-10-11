@@ -10,15 +10,11 @@ export class CityRepository {
     private cityModel: Model<ICity, CityKey>,
   ) {}
 
-  async createAll(
-    cities: ICity[]
-  ): Promise<ICity[]> {
-    return await Promise.all(cities.map(city => this.cityModel.create(city)));
+  async createAll(cities: ICity[]): Promise<ICity[]> {
+    return await Promise.all(cities.map((city) => this.cityModel.create(city)));
   }
 
-  async findByName(
-    name: string
-  ): Promise<ICity> {
+  async findByName(name: string): Promise<ICity> {
     const result = await this.cityModel.scan('name').eq(name).exec();
     return result[0];
   }

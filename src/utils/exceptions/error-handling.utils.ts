@@ -9,9 +9,11 @@ export class ErrorHandlingUtils {
   handleUnexpectedError(
     serviceName: string,
     methodName: string,
-    error: any
+    error: any,
   ): void {
-    this.logger.error(`Error occurred in ${serviceName}.${methodName}: ${error.message || error}`);
+    this.logger.error(
+      `Error occurred in ${serviceName}.${methodName}: ${error.message || error}`,
+    );
 
     if (error instanceof BaseException) {
       throw error;
@@ -20,7 +22,7 @@ export class ErrorHandlingUtils {
         `An unexpected error occurred in the ${serviceName} while processing the request. For more details, check the log.`,
         'UNEXPECTED_ERROR',
         HttpStatus.INTERNAL_SERVER_ERROR,
-        serviceName
+        serviceName,
       );
     }
   }
