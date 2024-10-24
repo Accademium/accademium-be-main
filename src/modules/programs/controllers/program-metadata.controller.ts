@@ -1,14 +1,14 @@
 import { Controller, Get, Put, Body, Param, Post } from '@nestjs/common';
 import { ProgramMetadataService } from '../services/program-metadata.service';
-import { CreateProgramMetadataDto, ProgramMetadataDTO, UpdateProgramMetadataDto } from '../interfaces/program-metadata.dto';
+import { CreateProgramMetadataDto, ProgramMetadataDTO, UpdateProgramMetadataDto } from '../dtos/program-metadata.dto';
 
 @Controller('api/v1/program-core/')
-export class ProgramCoreController {
-  constructor(private readonly programCoreService: ProgramMetadataService) {}
+export class ProgramMetadataController {
+  constructor(private readonly programMetadataService: ProgramMetadataService) {}
 
   @Get(':id')
   async getProgramCore(@Param('id') id: string): Promise<ProgramMetadataDTO> {
-    return await this.programCoreService.getProgramCore(id);
+    return await this.programMetadataService.getProgramCore(id);
   }
 
   // TODO: Add @UseGuards(JwtAuthGuard) for authentication
@@ -18,7 +18,7 @@ export class ProgramCoreController {
     @Param('id') id: string,
     @Body() program: Partial<UpdateProgramMetadataDto>,
   ): Promise<ProgramMetadataDTO> {
-    return await this.programCoreService.updateProgramCore(id, program);
+    return await this.programMetadataService.updateProgramCore(id, program);
   }
 
   @Get(':field/:type') 
@@ -26,13 +26,13 @@ export class ProgramCoreController {
     @Param('field') field: string,
     @Param('type') type: string,
   ): Promise<ProgramMetadataDTO[]> {
-    return await this.programCoreService.getProgramsByField(field, type);
+    return await this.programMetadataService.getProgramsByField(field, type);
   }
 
   @Post()
   async createProgramCoreList(
     @Body() programMetadataList: CreateProgramMetadataDto[],
   ): Promise<void> {
-    await this.programCoreService.createProgramCoreList(programMetadataList);
+    await this.programMetadataService.createProgramCoreList(programMetadataList);
   }
 }

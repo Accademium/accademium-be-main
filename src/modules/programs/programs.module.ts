@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { ProgramDetailsSchema } from './entities/program-details.schema';
 import { ProgramDetailsController } from './controllers/program-details.controllers';
-import { ProgramCoreController } from './controllers/program-metadata.controller';
+import { ProgramMetadataController } from './controllers/program-metadata.controller';
 import { ProgramDetailsService } from './services/program-details.service';
 import { ProgramDetailsRepository } from './repositories/program-details.repository';
 import { ProgramMetadataRepository } from './repositories/program-metadata.repository';
@@ -24,7 +24,7 @@ import { ProgramMetadataService } from './services/program-metadata.service';
     ]),
     TypeOrmModule.forFeature([ProgramMetadata]),
   ],
-  controllers: [ProgramDetailsController, ProgramCoreController],
+  controllers: [ProgramDetailsController, ProgramMetadataController],
   providers: [
     ProgramDetailsService,
     ProgramMetadataService,

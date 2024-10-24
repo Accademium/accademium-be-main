@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AuthenticationService } from './authentication.service';
-import { AuthenticationController } from './authentication.controller';
+import { AuthenticationService } from './services/authentication.service';
+import { AuthenticationController } from './controllers/authentication.controller';
 import { JwtStrategy } from './strategies/jwt-strategy';
 import { RefreshJwtStrategy } from './strategies/refreshToken-strategy';
 import { JwtModule } from '@nestjs/jwt';

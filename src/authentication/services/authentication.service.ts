@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CognitoService } from '../aws/cognito/cognito-client.service';
+import { CognitoService } from 'src/aws/cognito/cognito-client.service';
 import { JwtService } from '@nestjs/jwt';
-import { generateRandomPassword } from '../utils/passport/randomPasswordGenerator';
+import { generateRandomPassword } from 'src/utils/passport/randomPasswordGenerator';
 import {
   ChangePasswordRequest,
   CreateB2BUserRequest,
@@ -10,12 +10,14 @@ import {
   VerifyUserRequest,
 } from 'src/modules/user/dto/user.auth.dto';
 import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
+import { UserService } from 'src/modules/user/services/user.service';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
     private readonly cognitoService: CognitoService,
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
   ) {}
 
   /**
@@ -23,11 +25,10 @@ export class AuthenticationService {
    * @param registerDto {@link RegistrationRequest} - The registration data containing user details.
    */
   async registerUser(registerDto: RegistrationRequest): Promise<void> {
-    await this.cognitoService.createStudent(registerDto);
-    await this.cognitoService.adminAddUserToGroup({
-      userGroup: 'StudentGroup',
-      email: registerDto.email,
-    });
+    const cognitoResponse = await this.cognitoService.createStudent(registerDto);
+
+    await this.createAccademiumuser(cognitoResponse.UserSub, registerDto);
+    await this.addUserToGroup('StudentGroup', registerDto.email)
   }
 
   /**
@@ -35,17 +36,10 @@ export class AuthenticationService {
    * @param createB2BUser {@link CreateB2BUserRequest} - Data for creating the B2B user, including email, organization ID, and role.
    * @returns The temporary password generated for the user.
    */
-  async createB2BUser(createB2BUser: CreateB2BUserRequest): Promise<string> {
+  async createB2BUser(createB2BUser: CreateB2BUserRequest): Promise<string> { // TODO: create user in database 
     const tempPassword = generateRandomPassword();
-    await this.cognitoService.adminCreateUser({
-      tempPassword: tempPassword,
-      email: createB2BUser.email,
-      organisationId: createB2BUser.organisationId,
-    });
-    await this.cognitoService.adminAddUserToGroup({
-      userGroup: createB2BUser.userGroup,
-      email: createB2BUser.email,
-    });
+    await this.createB2BUserAndAddToGroup(tempPassword, createB2BUser)
+    
     return tempPassword;
   }
 
@@ -55,23 +49,9 @@ export class AuthenticationService {
    * @returns A signed JWT token if authentication is successful.
    */
   async loginUser(loginDto: LoginRequest): Promise<string> {
-    const response = await this.cognitoService.initiateAuth(loginDto);
-
-    const { IdToken } = response.AuthenticationResult;
-    const decoded = this.jwtService.decode(IdToken) as Record<string, any>;
-
-    // Creating a custom token with user details and an expiration time of 1 hour.
-    const token = this.jwtService.sign(
-      {
-        username: decoded['cognito:username'],
-        email: decoded.email,
-        groups: decoded['cognito:groups'],
-        organisationId: decoded['custom:organisationId'],
-      },
-      { expiresIn: '1h' },
-    );
-
-    return token;
+    const decoded = await this.authenticateWithCognitoAndDecodeToken(loginDto);
+    this.updateLastUserLogin(decoded['sub']);
+    return this.returnJWTToken(decoded);
   }
 
   /**
@@ -103,4 +83,54 @@ export class AuthenticationService {
       changeInitialPasswordRequest,
     );
   }
+  
+  private async authenticateWithCognitoAndDecodeToken(loginDto: LoginRequest) {
+    const response = await this.cognitoService.initiateAuth(loginDto);
+    const { IdToken } = response.AuthenticationResult;
+    return this.jwtService.decode(IdToken) as Record<string, any>;
+  }
+
+  private async updateLastUserLogin(cognitoId: any) {
+    const user = await this.userService.findByCognitoId(cognitoId);
+    await this.userService.updateLastLogin(user.user_id);
+  }
+
+  private returnJWTToken(decoded: Record<string, any>): string | PromiseLike<string> {
+    return this.jwtService.sign(
+      {
+        username: decoded['cognito:username'],
+        email: decoded.email,
+        groups: decoded['cognito:groups'],
+        organisationId: decoded['custom:organisationId'],
+      },
+      { expiresIn: '1h' },
+    );
+  }
+
+  private async createB2BUserAndAddToGroup(tempPassword: string, createB2BUser: CreateB2BUserRequest) {
+    await this.cognitoService.adminCreateUser({
+      tempPassword: tempPassword,
+      email: createB2BUser.email,
+      organisationId: createB2BUser.organisationId,
+    });
+    
+    await this.addUserToGroup(createB2BUser.userGroup, createB2BUser.email)
+  }
+
+  private async createAccademiumuser(cognitoId: string, registerDto: RegistrationRequest) {
+    await this.userService.createUser({
+      cognito_id: cognitoId,
+      email: registerDto.email,
+      first_name: registerDto.firstName,
+      last_name: registerDto.lastName,
+    });  
+  }
+
+  private async addUserToGroup(userGroup: string, email: string) {
+    await this.cognitoService.adminAddUserToGroup({
+      userGroup: userGroup,
+      email: email,
+    });
+  }
 }
+

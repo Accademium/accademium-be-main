@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProgramMetadataRepository } from '../repositories/program-metadata.repository';
-import { CreateProgramMetadataDto, ProgramMetadataDTO, UpdateProgramMetadataDto } from '../interfaces/program-metadata.dto';
+import { CreateProgramMetadataDto, ProgramMetadataDTO, UpdateProgramMetadataDto } from '../dtos/program-metadata.dto';
 
 @Injectable()
 export class ProgramMetadataService {

@@ -6,7 +6,7 @@ import { UniversityProgramResponseDto } from '../dtos/university-program-respons
 import { SurveyResultRepository } from '../repositories/survey-result.repository';
 import { CustomerAgreement } from 'src/utils/enums/survey.enums';
 import { v4 as uuidv4 } from 'uuid';
-import { ProgramCoreService } from 'src/modules/programs/services/program-metadata.service';
+import { ProgramMetadataService } from 'src/modules/programs/services/program-metadata.service';
 import {
   PartialSurveyResultOmit,
   SelectedSurveyFields,
@@ -23,7 +23,7 @@ export class SurveyService {
   constructor(
     private readonly aiClient: AIClient,
     private readonly surveyResultRepository: SurveyResultRepository,
-    private readonly programCoreService: ProgramCoreService,
+    private readonly programMetadataService: ProgramMetadataService,
     private readonly surveyUtils: SurveyUtils,
     private readonly errorhandlingService: ErrorHandlingService,
   ) {}
@@ -158,11 +158,11 @@ export class SurveyService {
   private async fetchAndFormatProgramsForField(
     field: string,
   ): Promise<Set<string>> {
-    const programs = await this.programCoreService.getProgramsByField(
+    const programs = await this.programMetadataService.getProgramsByField(
       field,
       'Bachelor',
     );
-    return new Set(programs.flatMap((program) => program.title));
+    return new Set(programs.flatMap((program) => program.program_title));
   }
 
   private createPartialSurveyResultOmit(
