@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { ProgramDetails } from '../interfaces/program-details.interface';
-import { ProgramDetailsRepository } from '../repositories/program.details.repository';
+import { ProgramDetails } from '../interfaces/program-details.dto';
+import { ProgramDetailsRepository } from '../repositories/program-details.repository';
 import { AwsException } from 'src/utils/exceptions/aws.exception';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
 

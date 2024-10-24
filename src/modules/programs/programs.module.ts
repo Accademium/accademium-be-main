@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { DynamooseModule } from 'nestjs-dynamoose';
-import { ProgramDetailsSchema } from './schemas/program-details.schema';
-import { ProgramDetailsController } from './controllers/program.details.controllers';
+import { ProgramDetailsSchema } from './entities/program-details.schema';
+import { ProgramDetailsController } from './controllers/program-details.controllers';
 import { ProgramCoreController } from './controllers/program-metadata.controller';
-import { ProgramDetailsService } from './services/program.details.service';
-import { ProgramDetailsRepository } from './repositories/program.details.repository';
+import { ProgramDetailsService } from './services/program-details.service';
+import { ProgramDetailsRepository } from './repositories/program-details.repository';
 import { ProgramMetadataRepository } from './repositories/program-metadata.repository';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
 import { TypeOrmModule } from '@nestjs/typeorm';

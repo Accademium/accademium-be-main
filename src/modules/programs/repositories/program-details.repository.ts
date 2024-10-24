@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
-import { ProgramDetails } from '../interfaces/program-details.interface';
+import { ProgramDetails } from '../interfaces/program-details.dto';
 
 @Injectable()
 export class ProgramDetailsRepository {
