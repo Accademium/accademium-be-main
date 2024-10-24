@@ -3,7 +3,6 @@ import { ProgramDetails } from '../interfaces/program-details.interface';
 import { ProgramDetailsRepository } from '../repositories/program.details.repository';
 import { AwsException } from 'src/utils/exceptions/aws.exception';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
-import { ProgramKey } from 'src/utils/interfaces/keys';
 
 @Injectable()
 export class ProgramDetailsService {
@@ -15,7 +14,7 @@ export class ProgramDetailsService {
     private errorHandlingService: ErrorHandlingService,
   ) {}
 
-  async getProgramDetails(key: ProgramKey): Promise<ProgramDetails> {
+  async getProgramDetails(key: string): Promise<ProgramDetails> {
     try {
       return await this.programDetailsRepository.get(key);
     } catch (error) {
@@ -58,7 +57,7 @@ export class ProgramDetailsService {
   }
 
   async updateProgramDetails(
-    key: ProgramKey,
+    key: string,
     program: Partial<ProgramDetails>,
   ): Promise<ProgramDetails> {
     return await this.programDetailsRepository.update(key, program);

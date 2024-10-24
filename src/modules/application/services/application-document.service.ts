@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ApplicationDocumentRepository } from '../repositories/application-document.repository.ts';
 import { ApplicationDocument } from '../interfaces/application-document.interface';
 import { v4 as uuidv4 } from 'uuid';

@@ -1,6 +1,5 @@
-import { ProgramKey } from 'src/utils/interfaces/keys';
-
-export interface ProgramDetails extends ProgramKey {
+export interface ProgramDetails {
+  program_id: string;
   address: string;
   city: string;
   dates: {

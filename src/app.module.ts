@@ -10,12 +10,14 @@ import { ConfigModule } from '@nestjs/config';
 import { DynamoModule } from './aws/dynamo/dynamo.module';
 import { APP_FILTER } from '@nestjs/core';
 import { GlobalExceptionFilter } from './utils/filters/global-exception.filter';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    DatabaseModule,
     DynamoModule,
     UserModule,
     ProgramsModule,

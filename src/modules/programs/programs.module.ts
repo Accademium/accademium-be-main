@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { ProgramDetailsSchema } from './schemas/program-details.schema';
-import { ProgramCoreSchema } from './schemas/program-core.schema';
 import { ProgramDetailsController } from './controllers/program.details.controllers';
-import { ProgramCoreController } from './controllers/program.core.controller';
+import { ProgramCoreController } from './controllers/program-metadata.controller';
 import { ProgramDetailsService } from './services/program.details.service';
-import { ProgramCoreService } from './services/program.core.service';
 import { ProgramDetailsRepository } from './repositories/program.details.repository';
-import { ProgramCoreRepository } from './repositories/program.core.repository';
+import { ProgramMetadataRepository } from './repositories/program-metadata.repository';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProgramMetadata } from './entities/program-metadata.entity';
+import { ProgramMetadataService } from './services/program-metadata.service';
 
 @Module({
   imports: [
@@ -20,23 +21,17 @@ import { ErrorHandlingService } from 'src/utils/services/error-handling.service'
           tableName: 'program_details',
         },
       },
-      {
-        name: 'ProgramsCore',
-        schema: ProgramCoreSchema,
-        options: {
-          tableName: 'programs_core',
-        },
-      },
     ]),
+    TypeOrmModule.forFeature([ProgramMetadata]),
   ],
   controllers: [ProgramDetailsController, ProgramCoreController],
   providers: [
     ProgramDetailsService,
-    ProgramCoreService,
+    ProgramMetadataService,
     ProgramDetailsRepository,
-    ProgramCoreRepository,
+    ProgramMetadataRepository,
     ErrorHandlingService,
   ],
-  exports: [ProgramDetailsService, ProgramCoreService],
+  exports: [ProgramDetailsService, ProgramMetadataService],
 })
 export class ProgramsModule {}

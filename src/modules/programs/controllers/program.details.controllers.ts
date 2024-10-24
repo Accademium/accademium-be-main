@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Put, Body, Param } from '@nestjs/common';
 import { ProgramDetailsService } from '../services/program.details.service';
 import { ProgramDetails } from '../interfaces/program-details.interface';
-import { ProgramKey } from 'src/utils/interfaces/keys';
 
 @Controller('api/v1/program-details/')
 export class ProgramDetailsController {
@@ -10,7 +9,7 @@ export class ProgramDetailsController {
   // TODO: Replace ProgramDetails with DTO
   @Get(':id')
   async getProgramDetails(
-    @Param('id') key: ProgramKey,
+    @Param('id') key: string,
   ): Promise<ProgramDetails> {
     console.log('Controller Details: ' + key);
     return await this.programDetailsService.getProgramDetails(key);
@@ -32,7 +31,7 @@ export class ProgramDetailsController {
   // TODO: Add @Roles(Role.ADMIN) for authorization
   @Put(':id')
   async updateProgramDetails(
-    @Param() key: ProgramKey,
+    @Param() key: string,
     @Body() program: Partial<ProgramDetails>,
   ): Promise<ProgramDetails> {
     return this.programDetailsService.updateProgramDetails(key, program);

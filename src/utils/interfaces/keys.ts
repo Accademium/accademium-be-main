@@ -6,10 +6,6 @@ export interface UserKey {
   user_id: string;
 }
 
-export interface ProgramKey {
-  programId: string;
-}
-
 export interface CityKey {
   city_id: string;
 }

@@ -6,7 +6,7 @@ import { UniversityProgramResponseDto } from '../dtos/university-program-respons
 import { SurveyResultRepository } from '../repositories/survey-result.repository';
 import { CustomerAgreement } from 'src/utils/enums/survey.enums';
 import { v4 as uuidv4 } from 'uuid';
-import { ProgramCoreService } from 'src/modules/programs/services/program.core.service';
+import { ProgramCoreService } from 'src/modules/programs/services/program-metadata.service';
 import {
   PartialSurveyResultOmit,
   SelectedSurveyFields,
