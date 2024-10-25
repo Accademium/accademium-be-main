@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { ApplicationDocument } from '../interfaces/application-document.interface';
-import { InjectModel, Model } from 'nestjs-dynamoose';
+import { InjectRepository } from '@nestjs/typeorm';
 import { ApplicationKey, DocumentKey } from 'src/utils/interfaces/keys';
+import { Repository } from 'typeorm';
+import { ApplicationDocument } from '../entities/application-document.entity';
+import { DocumentApprovalStatus } from 'src/utils/enums/document-approval-status.enum';
 
 @Injectable()
 export class ApplicationDocumentRepository {
   constructor(
-    @InjectModel('ApplicationDocument')
-    private applicationDocumentModel: Model<ApplicationDocument, DocumentKey>,
+    @InjectRepository(ApplicationDocument)
+    private readonly repository: Repository<ApplicationDocument>,
   ) {}
 
   /**
@@ -16,27 +18,31 @@ export class ApplicationDocumentRepository {
    * @returns Promise<ApplicationDocument[]> - A list of application documents
    */
   async findAllByApplicationId(
-    applicationId: ApplicationKey,
+    applicationId: string
   ): Promise<ApplicationDocument[]> {
-    return this.applicationDocumentModel
-      .query('applicationId')
-      .eq(applicationId)
-      .exec();
+    return this.repository.find({
+      where: { application: { applicationId: applicationId } },
+      relations: ['application', 'user'],
+    });
   }
 
   /**
    * Find a specific document by application ID and document ID
-   * @param applicationId - The ID of the application
    * @param documentId - The ID of the document
    * @returns Promise<ApplicationDocument | null> - The document or null if not found
    */
-  async findByDocumentId(
-    applicationId: ApplicationKey,
-    documentId: DocumentKey,
-  ): Promise<ApplicationDocument> {
-    return null;
-    // return this.applicationDocumentModel.query('applicationId').eq(applicationId).where('documentId').eq(documentId).exec();
-  }
+    async findByDocumentId(
+      documentId: string,
+    ): Promise<ApplicationDocument> {
+      const document = this.repository.findOne({
+        where: { documentId },
+        relations: ['application', 'user'],
+      });
+      if (!document) {
+        throw new Error('Document not found');
+      } 
+      return document;
+    }
 
   /**
    * Update the approval status of a document
@@ -46,17 +52,39 @@ export class ApplicationDocumentRepository {
    * @returns Promise<ApplicationDocument | null> - The updated document or null if not found
    */
   async updateApprovalStatus(
-    applicationId: ApplicationKey,
-    documentId: DocumentKey,
-    approvalStatus: string,
+    documentId: string,
+    approvalStatus: DocumentApprovalStatus,
+    approvedBy?: string,
+    rejectionReason?: string,
   ): Promise<ApplicationDocument> {
-    return null;
-    // return this.applicationDocumentModel.update(
-    //   { applicationId, documentId },
-    //   { approvalStatus, approvalDate: new Date() });
+    const document: ApplicationDocument = await this.findByDocumentId(documentId);
+    document.approvalStatus = approvalStatus;
+
+    if (approvalStatus === DocumentApprovalStatus.APPROVED) {
+      document.approvedBy = approvedBy;
+      document.approvalDate = new Date();
+    } else if (approvalStatus === DocumentApprovalStatus.REJECTED) {
+      document.rejectionReason = rejectionReason;
+    }
+  
+    return await this.repository.save(document);
   }
 
-  async save(document: ApplicationDocument): Promise<ApplicationDocument> {
-    return this.applicationDocumentModel.create(document);
+  /**
+   * 
+   * @param applicationId 
+   * @param documentData 
+   * @returns 
+   */
+  async save(
+    applicationId: string,
+    documentData: Partial<ApplicationDocument>
+  ): Promise<ApplicationDocument> {
+    const document = this.repository.create({
+      ...documentData,
+      application: {applicationId}
+    });
+
+    return this.repository.save(document);
   }
 }

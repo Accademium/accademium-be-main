@@ -1,12 +1,16 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Application } from 'src/modules/application/entities/application.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  user_id: string;
+  userId: string;
 
   @Column({ unique: true })
   cognito_id: string;
+
+  @OneToMany(() => Application, (application) => application.user)
+  applications: Application[];
 
   @Column({ unique: true })
   email: string;

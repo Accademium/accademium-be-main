@@ -2,19 +2,23 @@
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
-2. [System Architecture](#system-architecture)
-3. [Database](#database)
-4. [Authentication](#authentication)
-5. [Modules](#modules)
-6. [Schemas](#schemas)
-7. [Custom Decorators](#custom-decorators)
-8. [Guards and Roles](#guards-and-roles)
-9. [Error Handling](#error-handling)
-10. [Setup and Installation](#setup-and-installation)
-11. [API Documentation](#api-documentation)
-12. [Contributing](#contributing)
-13. [License](#license)
+- [University Application System](#university-application-system)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [System Architecture](#system-architecture)
+  - [Database](#database)
+  - [Authentication](#authentication)
+  - [Modules](#modules)
+  - [Schemas](#schemas)
+  - [Custom Decorators](#custom-decorators)
+    - [Implemented Decorators](#implemented-decorators)
+    - [Suggested Additional Decorators](#suggested-additional-decorators)
+  - [Guards and Roles](#guards-and-roles)
+  - [Error Handling](#error-handling)
+  - [Setup and Installation](#setup-and-installation)
+  - [API Documentation](#api-documentation)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 ## Introduction
 
@@ -30,6 +34,27 @@ The application is built using NestJS, a progressive Node.js framework for build
 - **ORM**: Dynamoose
 
 DynamoDB is used as the primary database for its scalability and performance. Dynamoose is utilized as an Object Data Modeling (ODM) tool to interact with DynamoDB, providing an intuitive interface for database operations within the NestJS environment.
+
+- **Database**: Postgres
+- **ORM**: TypeORM
+
+
+Run Migrations: 
+```
+npm run typeorm:run-migrations
+```
+Generate Migrations: 
+```
+npm run typeorm:generate-migration -- --name=MigrationName
+```
+Create Empty Migration: 
+```
+npm run typeorm:create-migration -- --name=MigrationName
+```
+Revert Last Migration: 
+```
+npm run typeorm:revert-migration
+```
 
 ## Authentication
 
@@ -54,7 +79,7 @@ The following schemas are defined for database modeling:
 
 1. **Application**: Represents a university application.
 2. **ApplicationDocument**: Represents documents associated with an application.
-3. **ProgramCore**: Represents core information about a university program.
+3. **ProgramMetadata**: Represents metadata information about a university program.
 4. **ProgramDetails**: Represents detailed information about a university program.
 5. **SurveyResult**: Represents the results of a survey.
 6. **City**: Represents city information.

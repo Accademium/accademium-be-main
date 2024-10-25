@@ -1,7 +1,7 @@
 import { Controller, Get, Put, Param, Body } from '@nestjs/common';
 import { ApplicationDocumentService } from '../services/application-document.service';
-import { ApplicationDocument } from '../interfaces/application-document.interface';
-import { ApplicationKey, DocumentKey } from 'src/utils/interfaces/keys';
+import { ApplicationDocument } from '../entities/application-document.entity';
+import { DocumentApprovalStatus } from 'src/utils/enums/document-approval-status.enum';
 
 @Controller('api/v1/application-documents/')
 export class ApplicationDocumentController {
@@ -11,34 +11,31 @@ export class ApplicationDocumentController {
 
   @Get(':applicationId')
   async getAllDocumentsForApplication(
-    @Param('applicationId') applicationId: ApplicationKey,
+    @Param('applicationId') applicationId: string,
   ): Promise<ApplicationDocument[]> {
     return this.applicationDocumentService.getAllDocumentsForApplication(
       applicationId,
     );
   }
 
-  @Get(':applicationId/:documentId')
+  @Get(':documentId')
   async getDocumentDetails(
-    @Param('applicationId') applicationId: ApplicationKey,
-    @Param('documentId') documentId: DocumentKey,
+    @Param('documentId') documentId: string,
   ): Promise<ApplicationDocument> {
     return this.applicationDocumentService.getDocumentDetails(
-      applicationId,
       documentId,
     );
   }
 
-  @Put(':applicationId/:documentId/approval-status')
+  @Put(':documentId/:approval-status')
   async updateDocumentApprovalStatus(
-    @Param('applicationId') applicationId: ApplicationKey,
-    @Param('documentId') documentId: DocumentKey,
-    @Body('approvalStatus') approvalStatus: string,
+    @Param('documentId') documentId: string,
+    @Param('approval-status') approvalStatus: DocumentApprovalStatus,
   ): Promise<ApplicationDocument> {
     return this.applicationDocumentService.updateDocumentApprovalStatus(
-      applicationId,
       documentId,
       approvalStatus,
+      "approverid"
     );
   }
 }

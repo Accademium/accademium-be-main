@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { ApplicationDocumentRepository } from '../repositories/application-document.repository.ts';
-import { ApplicationDocument } from '../interfaces/application-document.interface';
-import { v4 as uuidv4 } from 'uuid';
-import { ApplicationKey, DocumentKey } from 'src/utils/interfaces/keys.js';
+import { ApplicationDocumentRepository } from '../repositories/application-document.repository.ts.js';
+import { ApplicationDocument } from '../entities/application-document.entity.js';
+import { DocumentApprovalStatus } from 'src/utils/enums/document-approval-status.enum.js';
+import { ApplicationRepository } from '../repositories/application.repository.js';
 
 @Injectable()
 export class ApplicationDocumentService {
   constructor(
     private readonly applicationDocumentRepository: ApplicationDocumentRepository,
+    private readonly applicationRepository: ApplicationRepository,
   ) {}
 
   /**
@@ -16,7 +17,7 @@ export class ApplicationDocumentService {
    * @returns Promise<ApplicationDocument[]> - A list of application documents
    */
   async getAllDocumentsForApplication(
-    applicationId: ApplicationKey,
+    applicationId: string,
   ): Promise<ApplicationDocument[]> {
     return this.applicationDocumentRepository.findAllByApplicationId(
       applicationId,
@@ -25,17 +26,14 @@ export class ApplicationDocumentService {
 
   /**
    * Get details of a specific document
-   * @param applicationId - The ID of the application
    * @param documentId - The ID of the document
    * @returns Promise<ApplicationDocument> - The document details
    * @throws NotFoundException if the document is not found
    */
   async getDocumentDetails(
-    applicationId: ApplicationKey,
-    documentId: DocumentKey,
+    documentId: string,
   ): Promise<ApplicationDocument> {
     return this.applicationDocumentRepository.findByDocumentId(
-      applicationId,
       documentId,
     );
   }
@@ -49,30 +47,26 @@ export class ApplicationDocumentService {
    * @throws NotFoundException if the document is not found
    */
   async updateDocumentApprovalStatus(
-    applicationId: ApplicationKey,
-    documentId: DocumentKey,
-    approvalStatus: string,
+    documentId: string,
+    approvalStatus: DocumentApprovalStatus,
+    approvedBy?: string,
+    rejectionReason?: string,
   ): Promise<ApplicationDocument> {
     return this.applicationDocumentRepository.updateApprovalStatus(
-      applicationId,
       documentId,
       approvalStatus,
+      approvedBy,
+      rejectionReason
     );
   }
 
   async createApplicationDocument(
-    applicationId: ApplicationKey,
+    applicationId: string,
     documentData: Omit<
       ApplicationDocument,
       'documentId' | 'applicationId' | 'uploadDate'
     >,
   ): Promise<ApplicationDocument> {
-    const newDocument: ApplicationDocument = {
-      ...documentData,
-      documentId: uuidv4(),
-      applicationId,
-      uploadDate: new Date(),
-    };
-    return this.applicationDocumentRepository.save(newDocument);
+    return this.applicationDocumentRepository.save(applicationId, documentData);
   }
 }

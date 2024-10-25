@@ -1,32 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ApplicationService } from './services/application.service';
 import { ApplicationController } from './controllers/application.controller';
-import { ApplicationDocumentController } from './controllers/application-document.controller';
 import { ApplicationRepository } from './repositories/application.repository';
 import { ApplicationDocumentService } from './services/application-document.service';
 import { ApplicationDocumentRepository } from './repositories/application-document.repository.ts';
-import { DynamooseModule } from 'nestjs-dynamoose';
-import { applicationSchema } from './schemas/application.schema';
-import { applicationDocumentSchema } from './schemas/application-document.schema';
+import { ApplicationDocumentController } from './controllers/application-document.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Application } from './entities/application.entity';
+import { ApplicationDocument } from './entities/application-document.entity';
 
 @Module({
   imports: [
-    DynamooseModule.forFeature([
-      {
-        name: 'Application',
-        schema: applicationSchema,
-        options: {
-          tableName: 'applications',
-        },
-      },
-      {
-        name: 'ApplicationDocument',
-        schema: applicationDocumentSchema,
-        options: {
-          tableName: 'application_documents',
-        },
-      },
-    ]),
+    TypeOrmModule.forFeature([Application, ApplicationDocument])
   ],
   controllers: [ApplicationController, ApplicationDocumentController],
   providers: [

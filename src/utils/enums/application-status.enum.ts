@@ -1,0 +1,42 @@
+export enum ApplicationStatus {
+  CREATED = 'CREATED',
+  SUBMITTED = 'SUBMITTED',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  DOCUMENTS_APPROVED = 'DOCUMENTS_APPROVED',
+  SENT_TO_UNIVERSITY = 'SENT_TO_UNIVERSITY',
+  UNIVERSITY_REVIEWING = 'UNIVERSITY_REVIEWING',
+  UNIVERSITY_APPROVED = 'UNIVERSITY_APPROVED',
+  UNIVERSITY_REJECTED = 'UNIVERSITY_REJECTED',
+  UNIVERSITY_NEEDS_INFO = 'UNIVERSITY_NEEDS_INFO',
+  NEEDS_REVISION = 'NEEDS_REVISION',
+  REJECTED = 'REJECTED'
+}
+
+export enum ApplicationStatusGroup {
+  INITIAL = 'INITIAL',
+  ADMIN_REVIEW = 'ADMIN_REVIEW',
+  UNIVERSITY_REVIEW = 'UNIVERSITY_REVIEW',
+  FINAL = 'FINAL'
+}
+
+export const STATUS_GROUPS = {
+  [ApplicationStatusGroup.INITIAL]: [
+    ApplicationStatus.CREATED,
+    ApplicationStatus.SUBMITTED
+  ],
+  [ApplicationStatusGroup.ADMIN_REVIEW]: [
+    ApplicationStatus.UNDER_REVIEW,
+    ApplicationStatus.DOCUMENTS_APPROVED,
+    ApplicationStatus.NEEDS_REVISION
+  ],
+  [ApplicationStatusGroup.UNIVERSITY_REVIEW]: [
+    ApplicationStatus.SENT_TO_UNIVERSITY,
+    ApplicationStatus.UNIVERSITY_REVIEWING,
+    ApplicationStatus.UNIVERSITY_NEEDS_INFO
+  ],
+  [ApplicationStatusGroup.FINAL]: [
+    ApplicationStatus.UNIVERSITY_APPROVED,
+    ApplicationStatus.UNIVERSITY_REJECTED,
+    ApplicationStatus.REJECTED
+  ]
+};

@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Application } from '../interfaces/application.interface';
-import { InjectModel, Model, UpdatePartial } from 'nestjs-dynamoose';
-import { ApplicationKey, UserKey } from 'src/utils/interfaces/keys';
+import { Application } from '../entities/application.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ApplicationStatus } from 'src/utils/enums/application-status.enum';
+import { CreateApplicationDto } from '../dto/application-dtos/create-application.dto';
 
 @Injectable()
 export class ApplicationRepository {
   constructor(
-    @InjectModel('Application')
-    private applicationModel: Model<Application, ApplicationKey>,
+    @InjectRepository(Application)
+    private readonly repository: Repository<Application>,
   ) {}
 
   /**
@@ -15,49 +17,42 @@ export class ApplicationRepository {
    * @param userId - The ID of the user
    * @returns Promise<Application[]> - A list of applications
    */
-  async findAllByUserId(userId: UserKey): Promise<Application[]> {
-    return this.applicationModel.query('user_id').eq(userId).exec();
+  async findByUserId(userId: string): Promise<Application[]> {
+    return this.repository.find({
+      where: { user: { user_id: userId } },
+      relations: ['documents', 'user'],
+    });
   }
 
   /**
-   * Find a specific application by user ID and application ID
-   * @param userId - The ID of the user
+   * Find a specific application by application ID
    * @param applicationId - The ID of the application
-   * @returns Promise<Application | null> - The application or null if not found
+   * @returns Promise<Application> - The application or null if not found
    */
-  async findByUserIdAndApplicationId(
-    userId: UserKey,
-    applicationId: ApplicationKey,
+  async findByApplicationId(
+    applicationId: string,
   ): Promise<Application> {
-    const result = await this.applicationModel
-      .query('user_id')
-      .eq(userId)
-      .where('application_id')
-      .eq(applicationId)
-      .exec();
-    return result[0] || null;
+    return this.repository.findOne({
+      where: { applicationId: applicationId },
+      relations: ['documents', 'user'],
+    });
   }
 
   /**
    * Update the status of an application
-   * @param userId - {@link UserKey} The ID of the user
-   * @param applicationId - {@link ApplicationKey} The ID of the application
-   * @param status - The new status
-   * @returns Promise<Application | null> - The updated application or null if not found
+   * @param applicationId - {@link string} The ID of the application
+   * @param status - {@link ApplicationStatus} The new status
+   * @returns Promise<Application> - The updated application or null if not found
    */
   async updateStatus(
-    applicationId: ApplicationKey,
-    application: UpdatePartial<Application>,
+    applicationId: string,
+    status: ApplicationStatus,
   ): Promise<Application> {
-    // return null;
-    // update(key: UserKey, user: Partial<User>) {
-    return this.applicationModel.update(applicationId, application);
-    //   }
-    // return this.applicationModel.update(
-    //     { userId, applicationId },
-    //     { status, lastUpdatedDate: new Date() },
-    //     { ReturnValues: 'ALL_NEW' }
-    // );
+    await this.repository.update(applicationId, { status });
+    return this.repository.findOne({
+      where: { applicationId: applicationId },
+      relations: ['documents', 'user'],
+    });
   }
 
   /**
@@ -65,7 +60,13 @@ export class ApplicationRepository {
    * @param application - The application data
    * @returns Promise<Application> - The created application
    */
-  async save(application: Application): Promise<Application> {
-    return this.applicationModel.create(application);
+  async create(userId: string, applicationData: Partial<CreateApplicationDto>): Promise<Application> {
+    const application = this.repository.create({
+      ...applicationData,
+      status: ApplicationStatus.CREATED,
+      user: {userId: userId}
+    });
+
+    return this.repository.save(application);
   }
 }

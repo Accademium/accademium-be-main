@@ -1,32 +1,33 @@
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { ApplicationService } from '../services/application.service';
-import { Application } from '../interfaces/application.interface';
-import { ApplicationKey, UserKey } from 'src/utils/interfaces/keys';
+import { Application } from '../entities/application.entity';
+import { ApplicationStatus } from 'src/utils/enums/application-status.enum';
+import { CreateApplicationDto } from '../dto/application-dtos/create-application.dto';
 
 @Controller('api/v1/applications/')
 export class ApplicationController {
   constructor(private readonly applicationService: ApplicationService) {}
 
-  @Get('user/:userId')
+  @Get(':userId')
   async getAllApplicationsForUser(
-    @Param('userId') userId: UserKey,
+    @Param('userId') userId: string,
   ): Promise<Application[]> {
     return this.applicationService.getAllApplicationsForUser(userId);
   }
 
-  @Get('user/:userId/:applicationId')
+  @Get(':userId/:applicationId')
   async getApplicationForUser(
-    @Param('userId') userId: UserKey,
-    @Param('applicationId') applicationId: ApplicationKey,
+    @Param('userId') userId: string,
+    @Param('applicationId') applicationId: string,
   ): Promise<Application> {
     return this.applicationService.getApplicationForUser(userId, applicationId);
   }
 
-  @Put('user/:userId/:applicationId/status')
+  @Put(':userId/:applicationId/:status')
   async updateApplicationStatus(
-    @Param('userId') userId: UserKey,
-    @Param('applicationId') applicationId: ApplicationKey,
-    @Body('status') status: string,
+    @Param('userId') userId: string,
+    @Param('applicationId') applicationId: string,
+    @Param('status') status: ApplicationStatus,
   ): Promise<Application> {
     return this.applicationService.updateApplicationStatus(
       userId,
@@ -35,14 +36,10 @@ export class ApplicationController {
     );
   }
 
-  @Post('user/:userId')
+  @Post(':userId')
   async createApplication(
-    @Param('userId') userId: UserKey,
-    @Body()
-    applicationData: Omit<
-      Application,
-      'userId' | 'applicationId' | 'creationDate' | 'lastUpdatedDate'
-    >,
+    @Param('userId') userId: string,
+    @Body() applicationData: CreateApplicationDto,
   ): Promise<Application> {
     return this.applicationService.createApplication(userId, applicationData);
   }

@@ -11,7 +11,7 @@ import {
   AdminRespondToAuthChallengeCommand,
   ChangePasswordCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
-import { AwsConfigService } from '../../config/aws-config.service';
+// import { AwsConfigService } from '../../config/aws-config.service';
 import {
   ChangePasswordRequest,
   LoginRequest,
@@ -26,6 +26,7 @@ import {
   AdminCreateUserRequest,
   AdminAddUserToGroupRequest,
 } from 'src/modules/user/dto/user.cognito.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CognitoService {
@@ -34,14 +35,14 @@ export class CognitoService {
   private readonly cognitoClient: CognitoIdentityProviderClient;
 
   constructor(
-    private readonly config: AwsConfigService,
+    private readonly config: ConfigService,
     private readonly errorHandlingService: ErrorHandlingService,
   ) {
     this.cognitoClient = new CognitoIdentityProviderClient({
-      region: this.config.region,
+      region: this.config.get('aws.region'),
       credentials: {
-        accessKeyId: this.config.accessKeyId,
-        secretAccessKey: this.config.secretAccessKey,
+        accessKeyId: this.config.get('aws.accessKeyId'),
+        secretAccessKey: this.config.get('aws.secretAccessKey'),
       },
     });
   }
@@ -55,7 +56,7 @@ export class CognitoService {
     try {
       return await this.cognitoClient.send(
         new SignUpCommand({
-          ClientId: this.config.clientId,
+          ClientId: this.config.get('aws.clientId'),
           Username: registerDto.email,
           Password: registerDto.password,
           UserAttributes: [
@@ -88,7 +89,7 @@ export class CognitoService {
     try {
       return await this.cognitoClient.send(
         new AdminCreateUserCommand({
-          UserPoolId: this.config.userPoolId,
+          UserPoolId: this.config.get('aws.userPoolId'),
           Username: adminCreateUserRequest.email,
           UserAttributes: [
             { Name: 'email', Value: adminCreateUserRequest.email },
@@ -120,7 +121,7 @@ export class CognitoService {
     try {
       return await this.cognitoClient.send(
         new AdminAddUserToGroupCommand({
-          UserPoolId: this.config.userPoolId,
+          UserPoolId: this.config.get('aws.userPoolId'),
           GroupName: adminAddUserToGroupRequest.userGroup,
           Username: adminAddUserToGroupRequest.email,
         }),
@@ -147,7 +148,7 @@ export class CognitoService {
       authResponse = await this.cognitoClient.send(
         new InitiateAuthCommand({
           AuthFlow: 'USER_PASSWORD_AUTH',
-          ClientId: this.config.clientId,
+          ClientId: this.config.get('aws.clientId'),
           AuthParameters: {
             USERNAME: loginDto.email,
             PASSWORD: loginDto.password,
@@ -187,7 +188,7 @@ export class CognitoService {
     try {
       return await this.cognitoClient.send(
         new ConfirmSignUpCommand({
-          ClientId: this.config.clientId,
+          ClientId: this.config.get('aws.clientId'),
           Username: verifyDto.email,
           ConfirmationCode: verifyDto.code,
         }),
@@ -210,7 +211,7 @@ export class CognitoService {
     try {
       return await this.cognitoClient.send(
         new AdminGetUserCommand({
-          UserPoolId: this.config.userPoolId,
+          UserPoolId: this.config.get('aws.userPoolId'),
           Username: email,
         }),
       );
@@ -232,7 +233,7 @@ export class CognitoService {
     try {
       return await this.cognitoClient.send(
         new AdminDeleteUserCommand({
-          UserPoolId: this.config.userPoolId,
+          UserPoolId: this.config.get('aws.userPoolId'),
           Username: email,
         }),
       );
@@ -257,8 +258,8 @@ export class CognitoService {
       return await this.cognitoClient.send(
         new AdminRespondToAuthChallengeCommand({
           ChallengeName: 'NEW_PASSWORD_REQUIRED',
-          ClientId: this.config.clientId,
-          UserPoolId: this.config.userPoolId,
+          ClientId: this.config.get('aws.clientId'),
+          UserPoolId: this.config.get('aws.userPoolId'),
           Session: changeInitialPasswordRequest.session,
           ChallengeResponses: {
             USERNAME: changeInitialPasswordRequest.email,

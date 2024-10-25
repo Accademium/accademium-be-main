@@ -7,9 +7,9 @@ import { ConfigService } from '@nestjs/config';
     DynamooseModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         aws: {
-          region: configService.get<string>('AWS_REGION_DYNAMO'),
-          accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
-          secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
+          region: configService.get('aws.regionDynamo'),
+          accessKeyId: configService.get('aws.accessKeyId'),
+          secretAccessKey: configService.get('aws.secretAccessKey'),
         },
       }),
       inject: [ConfigService],
