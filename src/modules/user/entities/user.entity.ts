@@ -1,13 +1,10 @@
-import { Application } from 'src/modules/application/entities/application.entity';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Application } from "../../application/entities/application.entity";
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, OneToMany, PrimaryColumn } from 'typeorm';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('varchar', { length: 36 })
   userId: string;
-
-  @Column({ unique: true })
-  cognito_id: string;
 
   @OneToMany(() => Application, (application) => application.user)
   applications: Application[];
@@ -21,7 +18,7 @@ export class User {
   @Column()
   last_name: string;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   date_of_birth: Date;
 
   @Column({ nullable: true })

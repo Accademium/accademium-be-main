@@ -3,6 +3,7 @@ import { AccademiumException } from '../exceptions/accademium.exception';
 import { AwsException } from '../exceptions/aws.exception';
 import { AIClientException } from '../exceptions/ai-client.exception';
 import { BaseException } from '../exceptions/base.exception';
+import e from 'express';
 
 @Injectable()
 export class ErrorHandlingService {
@@ -26,15 +27,9 @@ export class ErrorHandlingService {
         },
       );
     } else if (error instanceof AccademiumException) {
-      this.logger.error(
-        `[ACCADEMIUM:${error.code}] ${error.message} in ${context}`,
-        error.stack,
-      );
+      this.logger.error(`[ACCADEMIUM:${error.code}] ${error.message} in ${context}`);
     } else if (error instanceof AIClientException) {
-      this.logger.error(
-        `[${error.aiClientType}:${error.code}] ${error.message} in ${context}`,
-        error.stack,
-      );
+      this.logger.error(`[${error.aiClientType}:${error.code}] ${error.message} in ${context}`);
     } else {
       this.logger.error(
         `[ACCADEMIUM:UNEXPECTED_ERROR] Unexpected error in ${context}: ${error.message}`,
@@ -50,7 +45,7 @@ export class ErrorHandlingService {
    * @param error
    * @param context
    */
-  logErrorAndThrow(error: Error, context: string): void {
+  logErrorAndThrow(error: Error, context: string): never {
     this.logError(error, context);
     throw error;
   }
@@ -74,6 +69,30 @@ export class ErrorHandlingService {
         serviceName,
       );
     }
+  }
+
+  handleDynamoSerachError(error: any, searchName: string, source: string): never {
+    let message: string = "";
+    let code: string = "";
+    let status: HttpStatus = HttpStatus.BAD_REQUEST;
+  
+    if (error.name === 'ResourceNotFoundException') {
+      message = `Item with search parameter "${searchName}" in ${source} does not exist`;
+      code = "ITEM_NOT_FOUND";
+      status = HttpStatus.NOT_FOUND;
+    } else if (error.name === 'ValidationError') {
+      message = `Invalid search parameter "${searchName}" in ${source}`;
+      code = "VALIDATION_ERROR";
+    } else {
+      this.logger.error(
+        `Unexpected error during search for "${searchName}" in ${source}`, 
+        error.stack
+      );
+      message = `Unexpected error during search for "${searchName}" in ${source}`;
+      code = "UNEXPECTED_ERROR";
+    }
+  
+    this.logErrorAndThrow(this.createAccademiumException(message, code, status, source) , source);
   }
 
   /**
@@ -127,7 +146,6 @@ export class ErrorHandlingService {
   }
 
   private extractAwsServiceDetails(awsError: any): Record<string, any> {
-    // TODO expand based on your needs
     const details: Record<string, any> = {};
 
     if (awsError.name === 'ValidationException') {

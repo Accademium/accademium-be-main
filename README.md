@@ -69,7 +69,7 @@ The application is divided into the following modules:
 3. **Cities**: Handles city-related data and operations.
 4. **Survey**: Manages surveys and their results.
 5. **University**: Handles university-specific data and operations.
-6. **User**: Manages user-related functionalities and profiles.
+6. **User**: Manages student-related functionalities and profiles. 
 
 Each module is responsible for its own set of features and database interactions.
 

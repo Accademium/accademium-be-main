@@ -11,6 +11,7 @@ export class CityController {
   async createCity(
     @Body() createCityDTOlist: CreateCityDTO[],
   ): Promise<ICity[]> {
+    console.log(createCityDTOlist)
     return await this.cityService.createCityList(createCityDTOlist);
   }
 

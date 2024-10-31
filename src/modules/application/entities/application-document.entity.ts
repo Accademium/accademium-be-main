@@ -8,8 +8,8 @@ import {
   JoinColumn
 } from 'typeorm';
 import { Application } from './application.entity';
-import { User } from 'src/modules/user/entities/user.entity';
-import { DocumentApprovalStatus } from 'src/utils/enums/document-approval-status.enum';
+import { User } from '../../user/entities/user.entity';
+import { DocumentApprovalStatus } from '../../../utils/enums/document-approval-status.enum';
 
 @Entity('documents')
 export class ApplicationDocument {

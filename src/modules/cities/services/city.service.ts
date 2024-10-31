@@ -12,8 +12,8 @@ export class CityService {
 
   constructor(private readonly cityRepository: CityRepository) {}
 
-  async createCityList(createCityDTO: CreateCityDTO[]): Promise<ICity[]> {
-    const cityList: ICity[] = createCityDTO.map((dto) => ({
+  async createCityList(createCityDTOList: CreateCityDTO[]): Promise<ICity[]> {
+    const cityList: ICity[] = createCityDTOList.map((dto) => ({
       city_id: uuidv4(),
       ...dto,
     }));

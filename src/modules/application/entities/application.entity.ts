@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { User } from 'src/modules/user/entities/user.entity';
-import { ApplicationStatus } from 'src/utils/enums/application-status.enum';
+import { User } from '../../user/entities/user.entity';
+import { ApplicationStatus } from '../../../utils/enums/application-status.enum';
 import { ApplicationDocument } from './application-document.entity';
 
 @Entity('applications')

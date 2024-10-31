@@ -16,27 +16,31 @@ export class UserRepository {
     return await this.repository.save(user);
   }
 
-  async findById(id: string): Promise<User | null> {
-    return await this.repository.findOne({
-      where: { user_id: id },
+  async findById(id: string): Promise<User> {
+    const user = await this.repository.findOne({
+      where: { userId: id },
     });
+    if (!user) {
+      throw new Error(`User with id ${id} not found`);
+    }
+    return user;
   }
 
-  async findByCognitoId(cognitoId: string): Promise<User | null> {
-    return await this.repository.findOne({
-      where: { cognito_id: cognitoId },
-    });
-  }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return await this.repository.findOne({
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.repository.findOne({
       where: { email },
     });
+    if (!user) {
+      throw new Error(`User with email ${email} not found`);
+    }
+    return user;
   }
 
   async update(id: string, data: Partial<User>): Promise<User> {
-    await this.repository.update(id, data);
-    return await this.findById(id);
+    const user = await this.findById(id);
+    Object.assign(user, data);
+    return await this.repository.save(user);
   }
 
   async updateLastLogin(id: string): Promise<void> {

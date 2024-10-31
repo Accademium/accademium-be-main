@@ -10,8 +10,8 @@ import {
   AdminDeleteUserCommand,
   AdminRespondToAuthChallengeCommand,
   ChangePasswordCommand,
+  AuthenticationResultType,
 } from '@aws-sdk/client-cognito-identity-provider';
-// import { AwsConfigService } from '../../config/aws-config.service';
 import {
   ChangePasswordRequest,
   LoginRequest,
@@ -27,6 +27,7 @@ import {
   AdminAddUserToGroupRequest,
 } from 'src/modules/user/dto/user.cognito.dto';
 import { ConfigService } from '@nestjs/config';
+import { AuthResultCognito } from 'src/authentication/dtos/auth-login-cognito.dto';
 
 @Injectable()
 export class CognitoService {
@@ -142,10 +143,9 @@ export class CognitoService {
    * @throws {AwsException} If the authentication fails.
    * @throws {AccademiumException} If the challenge is unsupported.
    */
-  async initiateAuth(loginDto: LoginRequest) {
-    let authResponse: any;
+  async initiateAuth(loginDto: LoginRequest): Promise<AuthResultCognito> {
     try {
-      authResponse = await this.cognitoClient.send(
+      const authResponse = await this.cognitoClient.send(
         new InitiateAuthCommand({
           AuthFlow: 'USER_PASSWORD_AUTH',
           ClientId: this.config.get('aws.clientId'),
@@ -155,27 +155,40 @@ export class CognitoService {
           },
         }),
       );
+  
       this.logger.log(
         `Authentication response: ${JSON.stringify(authResponse)}`,
       );
+  
+      if (authResponse.AuthenticationResult) {
+        return {
+          authenticationResult: authResponse.AuthenticationResult
+        };
+      }
+  
+      if (authResponse.ChallengeName) {
+        return {
+          challenge: {
+            name: authResponse.ChallengeName,
+            parameters: authResponse.ChallengeParameters,
+            session: authResponse.Session
+          }
+        };
+      }
+  
+      throw this.errorHandlingService.createAccademiumException(
+        'Authentication failed. Unexpected response.',
+        CognitoErrorMessage.COGNITO_INITIATE_AUTH_FAILED,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        this.SERVICE_NAME,
+      );
+  
     } catch (error) {
       this.handleCognitoError(
         error,
         `Failed to authenticate user ${loginDto.email}`,
         CognitoErrorMessage.COGNITO_INITIATE_AUTH_FAILED,
       );
-    }
-    if (!authResponse.AuthenticationResult) {
-      const challengeName = authResponse.ChallengeName;
-      if (challengeName !== 'NEW_PASSWORD_REQUIRED') {
-        throw this.errorHandlingService.createAccademiumException(
-          `Authentication failed. Challenge not supported. ${challengeName}`,
-          CognitoErrorMessage.COGNITO_INITIATE_AUTH_FAILED,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          this.SERVICE_NAME,
-        );
-      }
-      return authResponse;
     }
   }
 

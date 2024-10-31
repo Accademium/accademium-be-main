@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApplicationStatus } from 'src/utils/enums/application-status.enum';
 import { CreateApplicationDto } from '../dto/application-dtos/create-application.dto';
+import { UpdateApplicationDto } from '../dto/application-dtos/update-application.dto';
 
 @Injectable()
 export class ApplicationRepository {
@@ -19,7 +20,7 @@ export class ApplicationRepository {
    */
   async findByUserId(userId: string): Promise<Application[]> {
     return this.repository.find({
-      where: { user: { user_id: userId } },
+      where: { user: { userId } },
       relations: ['documents', 'user'],
     });
   }
@@ -48,7 +49,30 @@ export class ApplicationRepository {
     applicationId: string,
     status: ApplicationStatus,
   ): Promise<Application> {
-    await this.repository.update(applicationId, { status });
+    await this.repository.update(applicationId, 
+      {
+        status: status,
+        ...(status === ApplicationStatus.SENT_TO_UNIVERSITY && 
+          { submissionDate: new Date() })
+        });
+    return this.repository.findOne({
+      where: { applicationId: applicationId },
+      relations: ['documents', 'user'],
+    });
+  }
+
+  
+  /**
+   * Update the status of an application
+   * @param applicationId - {@link string} The ID of the application
+   * @param applicationData - {@link UpdateApplicationDto} The new data
+   * @returns Promise<Application> - The updated application or null if not found
+   */
+  async update(
+    applicationId: string,
+    applicationData: UpdateApplicationDto,
+  ): Promise<Application> {
+    await this.repository.update(applicationId, applicationData);
     return this.repository.findOne({
       where: { applicationId: applicationId },
       relations: ['documents', 'user'],

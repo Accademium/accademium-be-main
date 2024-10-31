@@ -11,6 +11,8 @@ import {
 } from 'src/modules/user/dto/user.auth.dto';
 import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
 import { UserService } from 'src/modules/user/services/user.service';
+import { TokenTypes } from 'src/utils/enums/token.enum';
+import { AuthResult } from '../dtos/auth-login-accademium.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -48,10 +50,14 @@ export class AuthenticationService {
    * @param loginDto {@link LoginRequest} - The login credentials, including email and password.
    * @returns A signed JWT token if authentication is successful.
    */
-  async loginUser(loginDto: LoginRequest): Promise<string> {
+  async loginUser(loginDto: LoginRequest): Promise<AuthResult> {
     const decoded = await this.authenticateWithCognitoAndDecodeToken(loginDto);
-    this.updateLastUserLogin(decoded['sub']);
-    return this.returnJWTToken(decoded);
+    const userId = decoded['sub'];
+    this.updateLastUserLogin(userId);
+    const authToken = this.createJWTToken(decoded);
+    const refreshToken = this.createJWTRefreshToken(userId);
+    
+    return {userId, authToken, refreshToken, tokenType: 'Bearer'};
   }
 
   /**
@@ -86,24 +92,34 @@ export class AuthenticationService {
   
   private async authenticateWithCognitoAndDecodeToken(loginDto: LoginRequest) {
     const response = await this.cognitoService.initiateAuth(loginDto);
-    const { IdToken } = response.AuthenticationResult;
+    const { IdToken } = response.authenticationResult;
     return this.jwtService.decode(IdToken) as Record<string, any>;
   }
 
-  private async updateLastUserLogin(cognitoId: any) {
-    const user = await this.userService.findByCognitoId(cognitoId);
-    await this.userService.updateLastLogin(user.user_id);
+  private async updateLastUserLogin(userId: string) {
+    await this.userService.updateLastLogin(userId);
   }
 
-  private returnJWTToken(decoded: Record<string, any>): string | PromiseLike<string> {
+  private createJWTToken(decoded: Record<string, any>): string {
     return this.jwtService.sign(
       {
         username: decoded['cognito:username'],
         email: decoded.email,
         groups: decoded['cognito:groups'],
         organisationId: decoded['custom:organisationId'],
+        type: TokenTypes.ACCADEMIUM_ACCESS_TOKEN,
       },
       { expiresIn: '1h' },
+    );
+  }
+
+  private createJWTRefreshToken(userId: string): string {
+    return this.jwtService.sign(
+      {
+        id: userId,
+        type: TokenTypes.ACCADEMIUM_REFRESH_TOKEN
+      },
+      { expiresIn: '7d' },
     );
   }
 
@@ -114,12 +130,12 @@ export class AuthenticationService {
       organisationId: createB2BUser.organisationId,
     });
     
-    await this.addUserToGroup(createB2BUser.userGroup, createB2BUser.email)
+    this.addUserToGroup(createB2BUser.userGroup, createB2BUser.email)
   }
 
   private async createAccademiumuser(cognitoId: string, registerDto: RegistrationRequest) {
     await this.userService.createUser({
-      cognito_id: cognitoId,
+      userId: cognitoId,
       email: registerDto.email,
       first_name: registerDto.firstName,
       last_name: registerDto.lastName,

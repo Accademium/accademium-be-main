@@ -49,14 +49,6 @@ export class UserService {
     return user;
   }
 
-  async findByCognitoId(cognitoId: string): Promise<User> {
-    const user = await this.userRepository.findByCognitoId(cognitoId);
-    if (!user) {
-      throw new NotFoundException(`User with Cognito ID ${cognitoId} not found`);
-    }
-    return user;
-  }
-
   async updateUser(userId: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findById(userId);
     return await this.userRepository.update(userId, updateUserDto);

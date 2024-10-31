@@ -1,5 +1,5 @@
 export class CreateUserDto {
-    cognito_id: string;
+    userId: string;
     email: string;
     first_name?: string;
     last_name?: string;

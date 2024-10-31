@@ -4,6 +4,7 @@ import { CitySchema } from './schemas/city.schema';
 import { CityController } from './controllers/city.controller';
 import { CityService } from './services/city.service';
 import { CityRepository } from './repositories/city.repository';
+import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { CityRepository } from './repositories/city.repository';
     ]),
   ],
   controllers: [CityController],
-  providers: [CityService, CityRepository],
+  providers: [CityService, CityRepository, ErrorHandlingService],
   exports: [CityService],
 })
 export class CityModule {}

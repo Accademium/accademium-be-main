@@ -111,17 +111,6 @@ export class ApplicationService {
       );
     }
 
-    // Update admin ID for admin actions
-    if (this.statusRequiresAdmin(newStatus)) {
-      await this.applicationRepository.update(applicationId, { 
-        adminId,
-        status: newStatus,
-        ...(newStatus === ApplicationStatus.SENT_TO_UNIVERSITY && {
-          submissionDate: new Date()
-        })
-      });
-    }
-
     return this.applicationRepository.updateStatus(applicationId, newStatus);
   }
 
@@ -133,7 +122,7 @@ export class ApplicationService {
    * @returns 
    */
   async updateUniversityStatus(
-    applicationId: ApplicationKey,
+    applicationId: string,
     newStatus: ApplicationStatus,
     notes?: string,
   ): Promise<Application> {

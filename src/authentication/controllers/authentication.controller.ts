@@ -7,6 +7,7 @@ import {
   ChangePasswordRequest,
 } from 'src/modules/user/dto/user.auth.dto';
 import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
+import { AuthResult } from '../dtos/auth-login-accademium.dto';
 
 @Controller('api/v1/auth/')
 export class AuthenticationController {
@@ -33,6 +34,7 @@ export class AuthenticationController {
     @Body() registerDto: RegistrationRequest,
   ): Promise<string> {
     await this.authService.registerUser(registerDto);
+    // TODO fix return string
     return 'Student registered successfully. Please check your email for verification.';
   }
 
@@ -43,9 +45,8 @@ export class AuthenticationController {
    */
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginRequest): Promise<{ token: string }> {
-    const token = await this.authService.loginUser(loginDto);
-    return { token };
+  async login(@Body() loginDto: LoginRequest): Promise<AuthResult>  {
+    return await this.authService.loginUser(loginDto);
   }
 
   /**
@@ -57,7 +58,7 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   async verify(@Body() verifyDto: VerifyUserRequest): Promise<string> {
     await this.authService.verifyUser(verifyDto);
-    return 'User verified successfully.';
+    return 'User verified successfully. You can login now with your credentials.';
   }
 
   /**
