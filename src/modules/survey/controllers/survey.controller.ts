@@ -9,25 +9,29 @@ import { SurveyKey } from 'src/utils/interfaces/keys';
 export class SurveyController {
   constructor(private readonly surveyService: SurveyService) {}
 
-  @Post()
+  @Post(':userId')
   async processSurvey(
     @Body() surveyRequest: RecommendationRequestDto,
+    @Param('userId') userId: string,
   ): Promise<RecommendationResponseDto> {
+    console.log(surveyRequest);
     return this.surveyService.processSurveyFieldRecommendations(
       surveyRequest,
-      '11111111111',
+      userId,
     );
   }
 
-  @Post(':surveyId/:field')
+  @Post(':userId/:surveyId/:field')
   async getUniversityProgramRecommendations(
     @Param('surveyId') surveyId: SurveyKey,
     @Param('field') field: string,
+    @Param('userId') userId: string,
     //TODO extract userId from the JWT token
   ): Promise<UniversityProgramResponseDto> {
+
     return this.surveyService.processSurveyProgramRecommendations(
       surveyId,
-      '11111111111',
+      userId,
       field,
     );
   }

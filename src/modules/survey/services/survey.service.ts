@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AIClient } from '../ai/ai.client';
 import { RecommendationRequestDto } from '../dtos/recommendation-request.dto';
-import { RecommendationResponseDto } from '../dtos/recommendation-response.dto';
+import { Recommendation, RecommendationResponseDto } from '../dtos/recommendation-response.dto';
 import { UniversityProgramResponseDto } from '../dtos/university-program-response.dto';
 import { SurveyResultRepository } from '../repositories/survey-result.repository';
 import { CustomerAgreement } from 'src/utils/enums/survey.enums';
@@ -35,11 +35,11 @@ export class SurveyService {
     try {
       const answers = surveyRequest.answers;
 
-      const recommendationsResponseDTO =
+      const recommendations =
         await this.fetchAIFieldRecommendations(answers);
 
       const studyFields: string[] = this.extractStudyFieldsFromRecommendations(
-        recommendationsResponseDTO,
+        recommendations,
       );
 
       const surveyId = await this.saveInitialSurveyAnswers(
@@ -48,8 +48,7 @@ export class SurveyService {
         answers,
       );
 
-      recommendationsResponseDTO.surveyId = surveyId;
-      return recommendationsResponseDTO;
+      return {recommendations, surveyId: surveyId.surveyId, userId};
     } catch (error) {
       this.errorhandlingService.handleUnexpectedError(
         this.SERVICE_NAME,
@@ -120,11 +119,6 @@ export class SurveyService {
     surveyId: SurveyKey,
     programRecommendations: string[],
   ): void {
-    console.log('field: ' + field);
-    console.log('surveyId: ' + surveyId);
-    console.log(
-      'programRecommendations: ' + JSON.stringify(programRecommendations),
-    );
     const updatedResult = this.createSelectedSurveyField(
       field,
       programRecommendations,
@@ -136,11 +130,10 @@ export class SurveyService {
 
   private async fetchAIFieldRecommendations(
     answers: Record<number, string>,
-  ): Promise<RecommendationResponseDto> {
+  ): Promise<Recommendation[]> {
     const surveyAnswers = this.surveyUtils.formatSurveyAnswers(answers);
-    const recommendationsObject =
-      await this.aiClient.getRecommendations(surveyAnswers);
-    return new RecommendationResponseDto(recommendationsObject, null);
+    const airesponse = await this.aiClient.getRecommendations(surveyAnswers);
+    return airesponse.recommendations;
   }
 
   private async formatSurveyAnswers(
@@ -191,9 +184,9 @@ export class SurveyService {
   }
 
   private extractStudyFieldsFromRecommendations(
-    recommendationsDTO: RecommendationResponseDto,
+    recommendations: Recommendation[],
   ): string[] {
-    return recommendationsDTO.recommendations.map(
+    return recommendations.map(
       (recommendation) => recommendation.study_field,
     );
   }

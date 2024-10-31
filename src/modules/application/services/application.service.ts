@@ -1,50 +1,52 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ApplicationRepository } from '../repositories/application.repository';
-import { v4 as uuidv4 } from 'uuid';
-import { ApplicationKey, UserKey } from 'src/utils/interfaces/keys';
-import { Application } from '../entities/application.entity';
 import { ApplicationStatus, ApplicationStatusGroup, STATUS_GROUPS } from 'src/utils/enums/application-status.enum';
 import { CreateApplicationDto } from '../dto/application-dtos/create-application.dto';
+import { ApplicationAggregatedDto, ApplicationDto } from '../dto/application-dtos/application.dto';
+import { ApplicationMapper } from '../mappers/application.mapper';
+import { ApplicationAggregatedMapper } from '../mappers/application-aggregated.mapper';
 
 @Injectable()
 export class ApplicationService {
-  constructor(private readonly applicationRepository: ApplicationRepository) {}
+  constructor(
+    private readonly applicationRepository: ApplicationRepository,
+    private readonly applicationMapper: ApplicationMapper,
+    private readonly applicationAggregatedMapper: ApplicationAggregatedMapper,
+  ) {}
 
   /**
    * Get all applications for a user
    * @param userId - The ID of the user
-   * @returns Promise<Application[]> - A list of applications
+   * @returns Promise<ApplicationDto[]> - A list of applications
    */
   async getAllApplicationsForUser(
     userId: string
-  ): Promise<Application[]> {
+  ): Promise<ApplicationDto[]> {
     const applications = await this.applicationRepository.findByUserId(userId);
     if (!applications.length) {
       throw new NotFoundException(`No applications found for user ${userId}`);
     }
-    return applications;
+    return this.applicationMapper.toDtoArray(applications);
   }
 
   /**
    * Get a specific application for a user
-   * @param userId - The ID of the user
    * @param applicationId - The ID of the application
-   * @returns Promise<Application> - The application
+   * @returns Promise<ApplicationAggregatedDto> - The application
    * @throws NotFoundException if the application is not found
    */
-  async getApplicationForUser(
-    userId: string,
+  async getAggregatedApplicationForUser(
     applicationId: string,
-  ): Promise<Application> {
+  ): Promise<ApplicationAggregatedDto> {
     const application = await this.applicationRepository.findByApplicationId(
       applicationId,
     );
     if (!application) {
       throw new NotFoundException(
-        `Application ${applicationId} not found for user ${userId}`,
+        `Application ${applicationId} not found`,
       );
     }
-    return application;
+    return this.applicationAggregatedMapper.toDto(application);
   }
 
   /**
@@ -56,11 +58,10 @@ export class ApplicationService {
    * @throws NotFoundException if the application is not found
    */
   async updateApplicationStatus(
-    userId: string,
     applicationId: string,
     status: ApplicationStatus,
-  ): Promise<Application> {
-    const application = await this.getApplicationForUser(userId, applicationId);
+  ): Promise<ApplicationDto> {
+    const application = await this.getAggregatedApplicationForUser(applicationId);
     
     // Validate status transition
     if (!this.isValidAdminStatusTransition(application.status, status)) {
@@ -69,7 +70,9 @@ export class ApplicationService {
       );
     }
 
-    return this.applicationRepository.updateStatus(applicationId, status);
+    const updatedApplciation = await this.applicationRepository.updateStatus(applicationId, status);
+    
+    return this.applicationMapper.toDto(updatedApplciation);
   }
 
   /**
@@ -80,9 +83,10 @@ export class ApplicationService {
    */
   async createApplication(
     userId: string,
-    applicationData: Partial<CreateApplicationDto>,
-  ): Promise<Application> {
-    return this.applicationRepository.create(userId, applicationData);
+    applicationData: CreateApplicationDto,
+  ): Promise<ApplicationDto> {
+    const application = await this.applicationRepository.create(userId, applicationData);
+    return this.applicationMapper.toDto(application);
   }
 
   /**
@@ -96,7 +100,7 @@ export class ApplicationService {
     applicationId: string,
     newStatus: ApplicationStatus,
     adminId: string,
-  ): Promise<Application> {
+  ): Promise<ApplicationDto> {
     const application = await this.applicationRepository.findByApplicationId(
       applicationId,
     );
@@ -111,7 +115,8 @@ export class ApplicationService {
       );
     }
 
-    return this.applicationRepository.updateStatus(applicationId, newStatus);
+    const updatedApplication = await this.applicationRepository.updateStatus(applicationId, newStatus);
+    return this.applicationMapper.toDto(updatedApplication);
   }
 
   /**
@@ -125,7 +130,7 @@ export class ApplicationService {
     applicationId: string,
     newStatus: ApplicationStatus,
     notes?: string,
-  ): Promise<Application> {
+  ): Promise<ApplicationDto> {
     const application = await this.applicationRepository.findByApplicationId(applicationId);
     
     if (!application) {
@@ -138,10 +143,12 @@ export class ApplicationService {
       );
     }
 
-    return this.applicationRepository.update(applicationId, {
+    const updatedApplication = await this.applicationRepository.update(applicationId, {
       status: newStatus,
       notes: notes ? `${application.notes ? application.notes + '\n' : ''}${notes}` : application.notes
     });
+
+    return this.applicationMapper.toDto(updatedApplication);
   }
 
   private isValidAdminStatusTransition(

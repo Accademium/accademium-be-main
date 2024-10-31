@@ -14,9 +14,6 @@ export class Application {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Column({ nullable: false })
-  applicationName: string;
-
   @Column({
     type: 'enum',
     enum: ApplicationStatus,
@@ -25,10 +22,19 @@ export class Application {
   status: ApplicationStatus;
 
   @Column({ nullable: false })
-  universityId: string;
+  programId: string;
+
+  @Column({ nullable: false })
+  programName: string;
 
   @Column({ nullable: false })
   universityName: string;
+  
+  @Column({ nullable: false })
+  city: string;
+
+  @Column({ nullable: false })
+  country: string;
 
   @Column({ nullable: true, type: 'timestamp' })
   submissionDate: Date;
@@ -36,16 +42,13 @@ export class Application {
   @Column({ nullable: true })
   mentorId: string;
 
-  @Column({ nullable: true })
-  adminId: string;
-
   @Column({ nullable: true, type: 'text' })
   notes: string;
 
   @OneToMany(() => ApplicationDocument, (document) => document.application, {
     cascade: true,
   })
-  documents: Document[];
+  documents: ApplicationDocument[];
 
   @CreateDateColumn()
   createdAt: Date;

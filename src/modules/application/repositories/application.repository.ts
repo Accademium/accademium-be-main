@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Application } from '../entities/application.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -19,10 +19,18 @@ export class ApplicationRepository {
    * @returns Promise<Application[]> - A list of applications
    */
   async findByUserId(userId: string): Promise<Application[]> {
-    return this.repository.find({
+    const applications = await this.repository.find({
       where: { user: { userId } },
-      relations: ['documents', 'user'],
+      order: {
+        createdAt: 'DESC'
+      }
     });
+
+    if (!applications.length) {
+      throw new NotFoundException(`No applications found for user ${userId}`);
+    }
+
+    return applications;
   }
 
   /**
@@ -33,10 +41,16 @@ export class ApplicationRepository {
   async findByApplicationId(
     applicationId: string,
   ): Promise<Application> {
-    return this.repository.findOne({
-      where: { applicationId: applicationId },
-      relations: ['documents', 'user'],
+    const application = await this.repository.findOne({
+      where: { applicationId },
+      relations: ['documents']
     });
+
+    if (!application) {
+      throw new NotFoundException(`Application ${applicationId} not found`);
+    }
+
+    return application;
   }
 
   /**
@@ -56,8 +70,7 @@ export class ApplicationRepository {
           { submissionDate: new Date() })
         });
     return this.repository.findOne({
-      where: { applicationId: applicationId },
-      relations: ['documents', 'user'],
+      where: { applicationId: applicationId }
     });
   }
 
@@ -74,8 +87,7 @@ export class ApplicationRepository {
   ): Promise<Application> {
     await this.repository.update(applicationId, applicationData);
     return this.repository.findOne({
-      where: { applicationId: applicationId },
-      relations: ['documents', 'user'],
+      where: { applicationId: applicationId }
     });
   }
 
@@ -84,7 +96,7 @@ export class ApplicationRepository {
    * @param application - The application data
    * @returns Promise<Application> - The created application
    */
-  async create(userId: string, applicationData: Partial<CreateApplicationDto>): Promise<Application> {
+  async create(userId: string, applicationData: CreateApplicationDto): Promise<Application> {
     const application = this.repository.create({
       ...applicationData,
       status: ApplicationStatus.CREATED,

@@ -1,5 +1,5 @@
 export class CreateApplicationDto {
-    universityId: string;
-    universityName: string;
+    programId: string;
+    programName: string;
     notes?: string;
 }

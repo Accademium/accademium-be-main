@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { ApplicationService } from '../services/application.service';
-import { Application } from '../entities/application.entity';
 import { ApplicationStatus } from 'src/utils/enums/application-status.enum';
 import { CreateApplicationDto } from '../dto/application-dtos/create-application.dto';
+import { ApplicationDto } from '../dto/application-dtos/application.dto';
 
 @Controller('api/v1/applications/')
 export class ApplicationController {
@@ -11,7 +11,7 @@ export class ApplicationController {
   @Get(':userId')
   async getAllApplicationsForUser(
     @Param('userId') userId: string,
-  ): Promise<Application[]> {
+  ): Promise<ApplicationDto[]> {
     return this.applicationService.getAllApplicationsForUser(userId);
   }
 
@@ -19,8 +19,8 @@ export class ApplicationController {
   async getApplicationForUser(
     @Param('userId') userId: string,
     @Param('applicationId') applicationId: string,
-  ): Promise<Application> {
-    return this.applicationService.getApplicationForUser(userId, applicationId);
+  ): Promise<ApplicationDto> {
+    return this.applicationService.getAggregatedApplicationForUser(applicationId);
   }
 
   @Put(':userId/:applicationId/:status')
@@ -28,9 +28,8 @@ export class ApplicationController {
     @Param('userId') userId: string,
     @Param('applicationId') applicationId: string,
     @Param('status') status: ApplicationStatus,
-  ): Promise<Application> {
+  ): Promise<ApplicationDto> {
     return this.applicationService.updateApplicationStatus(
-      userId,
       applicationId,
       status,
     );
@@ -40,7 +39,7 @@ export class ApplicationController {
   async createApplication(
     @Param('userId') userId: string,
     @Body() applicationData: CreateApplicationDto,
-  ): Promise<Application> {
+  ): Promise<ApplicationDto> {
     return this.applicationService.createApplication(userId, applicationData);
   }
 }

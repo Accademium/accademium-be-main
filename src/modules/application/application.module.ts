@@ -8,6 +8,8 @@ import { ApplicationDocumentController } from './controllers/application-documen
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Application } from './entities/application.entity';
 import { ApplicationDocument } from './entities/application-document.entity';
+import { ApplicationMapper } from './mappers/application.mapper';
+import { ApplicationAggregatedMapper } from './mappers/application-aggregated.mapper';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { ApplicationDocument } from './entities/application-document.entity';
     ApplicationDocumentService,
     ApplicationRepository,
     ApplicationDocumentRepository,
+    ApplicationMapper,
+    ApplicationAggregatedMapper
   ],
   exports: [ApplicationService, ApplicationDocumentService],
 })

@@ -8,24 +8,23 @@ import {
   JoinColumn
 } from 'typeorm';
 import { Application } from './application.entity';
-import { User } from '../../user/entities/user.entity';
 import { DocumentApprovalStatus } from '../../../utils/enums/document-approval-status.enum';
+import { ApplicationDocumentType } from 'src/utils/enums/document-type.enum';
 
 @Entity('documents')
 export class ApplicationDocument {
   @PrimaryGeneratedColumn('uuid')
   documentId: string;
 
-  @ManyToOne(() => Application) //, (application) => application.documents, { nullable: false }
+  @ManyToOne(() => Application)
   @JoinColumn({ name: 'applicationId' })
   application: Application;
 
-  @ManyToOne(() => User)
-  @JoinColumn()
-  user: User;
-
-  @Column()
-  documentType: string;
+  @Column({
+    type: 'enum',
+    enum: ApplicationDocumentType
+  })
+  documentType: ApplicationDocumentType;
 
   @Column()
   s3Key: string;
@@ -57,6 +56,9 @@ export class ApplicationDocument {
 
   @Column('integer', { default: 1 })
   version: number;
+
+  @Column({ default: true })
+  isMandatory: boolean
 
   @CreateDateColumn()
   createdAt: Date;

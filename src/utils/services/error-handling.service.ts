@@ -57,6 +57,7 @@ export class ErrorHandlingService {
   ): void {
     this.logger.error(
       `[ACCADEMIUM:UNEXPECTED_ERROR] Unexpected error occurred in ${serviceName}.${methodName}: ${error.message || error}`,
+      error.stack
     );
 
     if (error instanceof BaseException) {
