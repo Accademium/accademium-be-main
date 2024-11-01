@@ -76,7 +76,6 @@ export class AIClient {
             }
         ]
     }`;
-
     return this.getAIResponse(prompt);
   }
 

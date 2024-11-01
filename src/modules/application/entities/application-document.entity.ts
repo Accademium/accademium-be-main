@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { Application } from './application.entity';
 import { DocumentApprovalStatus } from '../../../utils/enums/document-approval-status.enum';
-import { ApplicationDocumentType } from 'src/utils/enums/document-type.enum';
+import { ApplicationDocumentType } from '../../../utils/enums/document-type.enum';
 
 @Entity('documents')
 export class ApplicationDocument {

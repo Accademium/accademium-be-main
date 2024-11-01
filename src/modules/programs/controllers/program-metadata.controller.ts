@@ -2,7 +2,7 @@ import { Controller, Get, Put, Body, Param, Post } from '@nestjs/common';
 import { ProgramMetadataService } from '../services/program-metadata.service';
 import { CreateProgramMetadataDto, ProgramMetadataDTO, UpdateProgramMetadataDto } from '../dtos/program-metadata.dto';
 
-@Controller('api/v1/program-core/')
+@Controller('api/v1/program-metadata/')
 export class ProgramMetadataController {
   constructor(private readonly programMetadataService: ProgramMetadataService) {}
 
@@ -16,13 +16,13 @@ export class ProgramMetadataController {
   @Put(':id')
   async updateProgramCore(
     @Param('id') id: string,
-    @Body() program: Partial<UpdateProgramMetadataDto>,
+    @Body() program: UpdateProgramMetadataDto,
   ): Promise<ProgramMetadataDTO> {
     return await this.programMetadataService.updateProgramCore(id, program);
   }
 
   @Get(':field/:type') 
-  async getBachelorProgramsByField(
+  async getProgramsByFieldAnd(
     @Param('field') field: string,
     @Param('type') type: string,
   ): Promise<ProgramMetadataDTO[]> {

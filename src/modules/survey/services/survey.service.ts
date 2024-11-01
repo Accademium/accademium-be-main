@@ -153,9 +153,9 @@ export class SurveyService {
   ): Promise<Set<string>> {
     const programs = await this.programMetadataService.getProgramsByField(
       field,
-      'Bachelor',
+      'bachelor',
     );
-    return new Set(programs.flatMap((program) => program.program_title));
+    return new Set(programs.flatMap((program) => program.generalized_name));
   }
 
   private createPartialSurveyResultOmit(

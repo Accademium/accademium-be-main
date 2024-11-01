@@ -1,14 +1,14 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  PrimaryColumn,
 } from 'typeorm';
 
 @Entity('programs_metadata')
 export class ProgramMetadata {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('varchar')
   program_id: string;
 
   @Column()
