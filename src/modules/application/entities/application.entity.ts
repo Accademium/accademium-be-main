@@ -45,14 +45,14 @@ export class Application {
   @Column({ nullable: true, type: 'text' })
   notes: string;
 
-  @OneToMany(() => ApplicationDocument, (document) => document.application, {
-    cascade: true,
-  })
-  documents: ApplicationDocument[];
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => ApplicationDocument, (document) => document.application, {
+    cascade: true,
+  })
+  applicationDocuments: ApplicationDocument[];
 }

@@ -22,7 +22,11 @@ import { ErrorHandlingService } from 'src/utils/services/error-handling.service'
     ]),
   ],
   controllers: [CityController],
-  providers: [CityService, CityRepository, ErrorHandlingService],
+  providers: [
+    CityService, 
+    CityRepository, 
+    ErrorHandlingService
+  ],
   exports: [CityService],
 })
 export class CityModule {}

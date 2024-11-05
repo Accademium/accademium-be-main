@@ -151,7 +151,7 @@ export class SurveyService {
   private async fetchAndFormatProgramsForField(
     field: string,
   ): Promise<Set<string>> {
-    const programs = await this.programMetadataService.getProgramsByField(
+    const programs = await this.programMetadataService.findProgramsByFieldAndType(
       field,
       'bachelor',
     );

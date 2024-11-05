@@ -8,7 +8,7 @@ export class ProgramMetadataController {
 
   @Get(':id')
   async getProgramCore(@Param('id') id: string): Promise<ProgramMetadataDTO> {
-    return await this.programMetadataService.getProgramCore(id);
+    return await this.programMetadataService.findProgramMetadata(id);
   }
 
   // TODO: Add @UseGuards(JwtAuthGuard) for authentication
@@ -18,21 +18,21 @@ export class ProgramMetadataController {
     @Param('id') id: string,
     @Body() program: UpdateProgramMetadataDto,
   ): Promise<ProgramMetadataDTO> {
-    return await this.programMetadataService.updateProgramCore(id, program);
+    return await this.programMetadataService.updateProgramMetadata(id, program);
   }
 
   @Get(':field/:type') 
-  async getProgramsByFieldAnd(
+  async findProgramsByFieldAnd(
     @Param('field') field: string,
     @Param('type') type: string,
   ): Promise<ProgramMetadataDTO[]> {
-    return await this.programMetadataService.getProgramsByField(field, type);
+    return await this.programMetadataService.findProgramsByFieldAndType(field, type);
   }
 
   @Post()
   async createProgramCoreList(
     @Body() programMetadataList: CreateProgramMetadataDto[],
   ): Promise<void> {
-    await this.programMetadataService.createProgramCoreList(programMetadataList);
+    await this.programMetadataService.createProgramMetadataList(programMetadataList);
   }
 }

@@ -11,7 +11,13 @@ export class UserService {
     private readonly userRepository: UserRepository
   ) {}
 
-  async getUserProfile(
+  /**
+   * Retrieves the profile information of a user by their email.
+   * @param email - The email address of the user.
+   * @returns An object containing user attributes and account creation date from Cognito.
+   * @throws InternalServerErrorException if there is an error retrieving the profile.
+   */
+  async findCognitoUserProfile(
     email: string,
   ): Promise<{ UserAttributes: any; UserCreateDate: Date }> {
     try {
@@ -26,7 +32,14 @@ export class UserService {
     }
   }
 
-  async deleteUserProfile(email: string): Promise<void> {
+  /**
+   * Deletes a user's profile by their email.
+   * @param email - The email address of the user to delete.
+   * @throws InternalServerErrorException if there is an error during deletion.
+   */
+  async deleteUserProfile(
+    email: string
+  ): Promise<void> {
     try {
       await this.cognitoService.adminDeleteUser(email);
     } catch (error) {
@@ -37,28 +50,69 @@ export class UserService {
     }
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  /**
+   * Creates a new user in the system.
+   * @param createUserDto - Data transfer object containing user creation details.
+   * @returns The newly created user.
+   */
+  async createUser(
+    createUserDto: CreateUserDto
+  ): Promise<User> {
     return await this.userRepository.create(createUserDto);
   }
 
-  async findById(userId: string): Promise<User> {
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
-    }
-    return user;
+  /**
+   * Finds a user by their unique ID.
+   * @param userId - The unique identifier of the user.
+   * @returns The user entity if found.
+   */
+  async findById(
+    userId: string
+  ): Promise<User> {
+    return await this.userRepository.findById(userId);
   }
 
-  async updateUser(userId: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findById(userId);
+  /**
+   * Finds a user by their email.
+   * @param email - The email address of the user.
+   * @returns The user entity if found.
+   */
+  async findByEmail(
+    email: string
+  ): Promise<User> {
+    return await this.userRepository.findByEmail(email);
+  }
+
+  /**
+   * Updates the information of a specific user.
+   * @param userId - The unique identifier of the user to update.
+   * @param updateUserDto - Data transfer object containing user update details.
+   * @returns The updated user entity.
+   */
+  async updateUser(
+    userId: string, 
+    updateUserDto: UpdateUserDto
+  ): Promise<User> {
     return await this.userRepository.update(userId, updateUserDto);
   }
 
-  async updateLastLogin(userId: string): Promise<void> {
+  /**
+   * Updates the last login timestamp of a specific user.
+   * @param userId - The unique identifier of the user to update.
+   */
+  async updateLastLogin(
+    userId: string
+  ): Promise<void> {
     await this.userRepository.updateLastLogin(userId);
   }
 
-  async deactivateUser(userId: string): Promise<void> {
+  /**
+   * Deactivates a user account by setting its status to inactive.
+   * @param userId - The unique identifier of the user to deactivate.
+   */
+  async deactivateUser(
+    userId: string
+  ): Promise<void> {
     await this.userRepository.softDelete(userId);
   }
 }

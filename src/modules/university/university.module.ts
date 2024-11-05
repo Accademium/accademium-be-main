@@ -1,9 +1,23 @@
 import { Module } from '@nestjs/common';
-import { UniversityService } from './university.service';
-import { UniversityController } from './university.controller';
+import { UniversityDetailsController } from './controllers/university-details.controller';
+import { UniversityDetailsService } from './services/university-details.service';
+import { UniversityDetailsRepository } from './repositories/univerisity-details.repository';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UniversityDetails } from './entities/university-details.entity';
 
 @Module({
-  controllers: [UniversityController],
-  providers: [UniversityService],
+  imports: [
+    TypeOrmModule.forFeature([UniversityDetails]),
+  ],
+  controllers: [
+    UniversityDetailsController
+  ],
+  providers: [
+    UniversityDetailsService,
+    UniversityDetailsRepository,
+  ],
+  exports: [
+    UniversityDetailsService
+  ]
 })
 export class UniversityModule {}

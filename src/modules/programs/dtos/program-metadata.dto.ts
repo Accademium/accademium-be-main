@@ -1,5 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { IsString, IsArray, IsUUID, IsEnum, ArrayMinSize } from 'class-validator';
+import { UniversityDetailsDto } from 'src/modules/university/dto/university-details.dto';
 import { DegreeType } from 'src/utils/enums/university.enums';
 
 export class CreateProgramMetadataDto {
@@ -40,4 +41,5 @@ export class ProgramMetadataDTO {
   fields: string[];
   created_at: Date;
   updated_at: Date;
+  university: UniversityDetailsDto;
 }

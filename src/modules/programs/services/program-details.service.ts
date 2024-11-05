@@ -10,17 +10,19 @@ export class ProgramDetailsService {
   private readonly logger = new Logger(ProgramDetailsService.name);
 
   constructor(
-    private programDetailsRepository: ProgramDetailsRepository,
-    private errorHandlingService: ErrorHandlingService,
+    private readonly programDetailsRepository: ProgramDetailsRepository,
+    private readonly errorHandlingService: ErrorHandlingService,
   ) {}
 
-  async getProgramDetails(key: string): Promise<ProgramDetails> {
+  async findProgramDetails(
+    id: string
+  ): Promise<ProgramDetails> {
     try {
-      return await this.programDetailsRepository.get(key);
+      return await this.programDetailsRepository.findById(id);
     } catch (error) {
       throw this.handleDynamoError(
         error,
-        'Failed to get program core',
+        `Failed to get program details with id=${id}`,
         'GET_PROGRAM_CORE_ERROR',
       );
     }
@@ -30,11 +32,11 @@ export class ProgramDetailsService {
     programDetailsList: ProgramDetails[],
   ): Promise<void> {
     this.logger.log(
-      `[ACCADEMIUM:ADMIN] New chunk with project-details data (${programDetailsList.length} objects) is being processed.`,
+      `New chunk with project-details data (${programDetailsList.length} objects) is being processed.`,
     );
     await Promise.all(
-      programDetailsList.map(async (programCore) => {
-        await this.createProgramDetails(programCore);
+      programDetailsList.map(async (programDetails) => {
+        await this.createProgramDetails(programDetails);
       }),
     );
   }
@@ -46,13 +48,7 @@ export class ProgramDetailsService {
     try {
       return await this.programDetailsRepository.create(programDetails);
     } catch (error) {
-      this.logger.error(error.message);
-      this.logger.error(error);
-      // throw this.handleDynamoError(
-      //   error,
-      //   `Failed to create program details with id ${programDetails.programId}`,
-      //   'CREATE_PROGRAM_DETAILS_ERROR',
-      // );
+      this.logger.error(error.stack);
     }
   }
 
@@ -63,11 +59,11 @@ export class ProgramDetailsService {
     return await this.programDetailsRepository.update(key, program);
   }
 
-  async getProgramsByStudyType(study_type: string) {
+  async findProgramsByStudyType(study_type: string) {
     try {
       return await this.programDetailsRepository.findByStudyType(study_type);
     } catch (error) {
-      console.error('Failed to get programs by field', error);
+      console.error('Failed to get programs by study type', error);
       throw this.handleDynamoError(
         error,
         'Failed to get programs by field',

@@ -8,7 +8,13 @@ export class ProgramMetadataService {
     private readonly programRepository: ProgramMetadataRepository,
   ) {}
 
-  async getProgramCore(id: string): Promise<ProgramMetadataDTO> {
+  /**
+   * Retrieves program metadata by its unique ID.
+   * @param id - The unique identifier of the program.
+   * @returns The program metadata DTO if found.
+   * @throws NotFoundException if the program with the specified ID does not exist.
+   */
+  async findProgramMetadata(id: string): Promise<ProgramMetadataDTO> {
     const program = await this.programRepository.findById(id);
     if (!program) {
       throw new NotFoundException(`Program with ID ${id} not found`);
@@ -16,7 +22,14 @@ export class ProgramMetadataService {
     return program;
   }
 
-  async updateProgramCore(
+  /**
+   * Updates the metadata of a specific program by its ID.
+   * @param id - The unique identifier of the program.
+   * @param updateData - Partial data for updating the program metadata.
+   * @returns The updated program metadata DTO.
+   * @throws NotFoundException if the program with the specified ID does not exist.
+   */
+  async updateProgramMetadata(
     id: string,
     updateData: Partial<UpdateProgramMetadataDto>,
   ): Promise<ProgramMetadataDTO> {
@@ -27,11 +40,21 @@ export class ProgramMetadataService {
     return await this.programRepository.update(id, updateData);
   }
 
-  async getProgramsByField(field: string, type: string): Promise<ProgramMetadataDTO[]> {
+  /**
+   * Retrieves programs based on a specific field of study and degree type.
+   * @param field - The field of study to filter programs by.
+   * @param type - The degree type to filter programs by.
+   * @returns A list of program metadata DTOs matching the specified criteria.
+   */
+  async findProgramsByFieldAndType(field: string, type: string): Promise<ProgramMetadataDTO[]> {
     return await this.programRepository.findByFieldAndType(field, type);
   }
 
-  async createProgramCoreList(programMetadataList: CreateProgramMetadataDto[]): Promise<void> {
+  /**
+   * Creates multiple program metadata records.
+   * @param programMetadataList - Array of program metadata DTOs to be created.
+   */
+  async createProgramMetadataList(programMetadataList: CreateProgramMetadataDto[]): Promise<void> {
     await this.programRepository.createMany(programMetadataList);
   }
 }

@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ApplicationRepository } from '../repositories/application.repository';
 import { ApplicationStatus, ApplicationStatusGroup, STATUS_GROUPS } from 'src/utils/enums/application-status.enum';
-import { CreateApplicationDto } from '../dto/application-dtos/create-application.dto';
 import { ApplicationAggregatedDto, ApplicationDto } from '../dto/application-dtos/application.dto';
 import { ApplicationMapper } from '../mappers/application.mapper';
 import { ApplicationAggregatedMapper } from '../mappers/application-aggregated.mapper';
+import { ProgramMetadataService } from 'src/modules/programs/services/program-metadata.service';
+import { CreateApplicationDto } from '../dto/application-dtos/create-application.dto';
+import { ApplicationDocumentService } from './application-document.service';
 
 @Injectable()
 export class ApplicationService {
@@ -12,6 +14,8 @@ export class ApplicationService {
     private readonly applicationRepository: ApplicationRepository,
     private readonly applicationMapper: ApplicationMapper,
     private readonly applicationAggregatedMapper: ApplicationAggregatedMapper,
+    private readonly programMetadataService: ProgramMetadataService,
+    private readonly applicationDocumentService: ApplicationDocumentService
   ) {}
 
   /**
@@ -19,10 +23,10 @@ export class ApplicationService {
    * @param userId - The ID of the user
    * @returns Promise<ApplicationDto[]> - A list of applications
    */
-  async getAllApplicationsForUser(
+  async findAllApplicationsForUser(
     userId: string
   ): Promise<ApplicationDto[]> {
-    const applications = await this.applicationRepository.findByUserId(userId);
+    const applications = await this.applicationRepository.findAllApllicationsByUserId(userId);
     if (!applications.length) {
       throw new NotFoundException(`No applications found for user ${userId}`);
     }
@@ -35,10 +39,10 @@ export class ApplicationService {
    * @returns Promise<ApplicationAggregatedDto> - The application
    * @throws NotFoundException if the application is not found
    */
-  async getAggregatedApplicationForUser(
+  async findAggregatedApplicationForUser(
     applicationId: string,
   ): Promise<ApplicationAggregatedDto> {
-    const application = await this.applicationRepository.findByApplicationId(
+    const application = await this.applicationRepository.findApplicationById(
       applicationId,
     );
     if (!application) {
@@ -61,7 +65,7 @@ export class ApplicationService {
     applicationId: string,
     status: ApplicationStatus,
   ): Promise<ApplicationDto> {
-    const application = await this.getAggregatedApplicationForUser(applicationId);
+    const application = await this.findAggregatedApplicationForUser(applicationId);
     
     // Validate status transition
     if (!this.isValidAdminStatusTransition(application.status, status)) {
@@ -70,7 +74,7 @@ export class ApplicationService {
       );
     }
 
-    const updatedApplciation = await this.applicationRepository.updateStatus(applicationId, status);
+    const updatedApplciation = await this.applicationRepository.updateApplicationStatus(applicationId, status);
     
     return this.applicationMapper.toDto(updatedApplciation);
   }
@@ -78,14 +82,29 @@ export class ApplicationService {
   /**
    * Create a new application for a user
    * @param userId - The ID of the user
-   * @param applicationData - The application data
+   * @param programId - The program id
    * @returns Promise<Application> - The created application
    */
   async createApplication(
     userId: string,
-    applicationData: CreateApplicationDto,
+    programId: string,
   ): Promise<ApplicationDto> {
-    const application = await this.applicationRepository.create(userId, applicationData);
+    const program = await this.programMetadataService.findProgramMetadata(programId);
+    // TODO add country as university property and enum
+    const country = 'NE';
+    const application = await this.applicationRepository.createApplication({
+      userId,
+      programId,
+      programName: program.program_title,
+      universityName: program.university.university,
+      city: program.city,
+      country: 'NE',
+      status: ApplicationStatus.CREATED,
+      notes: '',
+    });
+
+    this.applicationDocumentService.createDefaultApplicationDocument(application.applicationId, country);
+
     return this.applicationMapper.toDto(application);
   }
 
@@ -101,7 +120,7 @@ export class ApplicationService {
     newStatus: ApplicationStatus,
     adminId: string,
   ): Promise<ApplicationDto> {
-    const application = await this.applicationRepository.findByApplicationId(
+    const application = await this.applicationRepository.findApplicationById(
       applicationId,
     );
     
@@ -115,7 +134,7 @@ export class ApplicationService {
       );
     }
 
-    const updatedApplication = await this.applicationRepository.updateStatus(applicationId, newStatus);
+    const updatedApplication = await this.applicationRepository.updateApplicationStatus(applicationId, newStatus);
     return this.applicationMapper.toDto(updatedApplication);
   }
 
@@ -131,7 +150,7 @@ export class ApplicationService {
     newStatus: ApplicationStatus,
     notes?: string,
   ): Promise<ApplicationDto> {
-    const application = await this.applicationRepository.findByApplicationId(applicationId);
+    const application = await this.applicationRepository.findApplicationById(applicationId);
     
     if (!application) {
       throw new NotFoundException(`Application ${applicationId} not found`);
@@ -143,7 +162,7 @@ export class ApplicationService {
       );
     }
 
-    const updatedApplication = await this.applicationRepository.update(applicationId, {
+    const updatedApplication = await this.applicationRepository.updateApplication(applicationId, {
       status: newStatus,
       notes: notes ? `${application.notes ? application.notes + '\n' : ''}${notes}` : application.notes
     });
@@ -200,7 +219,9 @@ export class ApplicationService {
     return allowedTransitions[currentStatus]?.includes(newStatus) ?? false;
   }
 
-  private statusRequiresAdmin(status: ApplicationStatus): boolean {
+  private statusRequiresAdmin(
+    status: ApplicationStatus
+  ): boolean {
     return [
       ApplicationStatus.UNDER_REVIEW,
       ApplicationStatus.DOCUMENTS_APPROVED,
@@ -215,7 +236,9 @@ export class ApplicationService {
    * @param status 
    * @returns 
    */
-  getStatusGroup(status: ApplicationStatus): ApplicationStatusGroup {
+  private findStatusGroup(
+    status: ApplicationStatus
+  ): ApplicationStatusGroup {
     return Object.entries(STATUS_GROUPS).find(([_, statuses]) => 
       statuses.includes(status)
     )?.[0] as ApplicationStatusGroup;

@@ -24,7 +24,10 @@ import { ProgramMetadataService } from './services/program-metadata.service';
     ]),
     TypeOrmModule.forFeature([ProgramMetadata]),
   ],
-  controllers: [ProgramDetailsController, ProgramMetadataController],
+  controllers: [
+    ProgramDetailsController, 
+    ProgramMetadataController
+  ],
   providers: [
     ProgramDetailsService,
     ProgramMetadataService,
@@ -32,6 +35,9 @@ import { ProgramMetadataService } from './services/program-metadata.service';
     ProgramMetadataRepository,
     ErrorHandlingService,
   ],
-  exports: [ProgramDetailsService, ProgramMetadataService],
+  exports: [
+    ProgramDetailsService, 
+    ProgramMetadataService
+  ],
 })
 export class ProgramsModule {}

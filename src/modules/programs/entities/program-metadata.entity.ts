@@ -1,9 +1,12 @@
+import { UniversityDetails } from '../../university/entities/university-details.entity';
 import {
   Entity,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('programs_metadata')
@@ -17,17 +20,24 @@ export class ProgramMetadata {
   @Column()
   generalized_name: string;
 
-  @Column()
+  @ManyToOne(() => UniversityDetails, (university) => university.programs)
+  @JoinColumn([
+    { name: 'university_id', referencedColumnName: 'university_id' },
+    { name: 'city', referencedColumnName: 'city' }
+  ])
+  university: UniversityDetails;
+
+  @Column({ nullable: false })
   university_id: string;
 
+  @Column({ nullable: false })
+  city: string;
+  
   @Column()
   degree_type: string;
 
   @Column()
   language: string;
-
-  @Column()
-  city: string;
 
   @Column('text', { array: true })
   fields: string[];

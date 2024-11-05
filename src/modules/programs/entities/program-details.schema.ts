@@ -1,38 +1,110 @@
+import { count } from 'console';
 import { Schema } from 'dynamoose/dist/Schema';
 
 export const ProgramDetailsSchema = new Schema({
   programId: {
     type: String,
     hashKey: true,
+    required: true
   },
-  address: String,
-  city: String,
-  dates: {
-    type: Object,
-    schema: {
-      DEADLINE_EU: String,
-      DEADLINE_NON_EU: String,
-      START_DATE: String,
-    },
+  programName: {
+    type: String,
+    required: true
   },
-  description: String,
-  duration: String,
-  ects: String,
+  duration: {
+    type: String,
+    required: true
+  },
+  ects: {
+    type: Number,
+    required: true
+  },
+  graduationTitle: {
+    type: String,
+    required: true
+  },
   fees: {
     type: Object,
     schema: {
-      EU: String,
-      INSTITUTIONAL: String,
-      NON_EU: String,
+      eea: {
+        type: Number,
+        required: true
+      },
+      nonEea: { 
+        type: Number,
+        required: true
+      },
+      institutional: {
+        type: Number,
+        required: true
+      }
     },
+    required: true
   },
-  field: String,
-  institution_link: String,
-  institution_logo: String,
-  institution_name: String,
-  language: String,
-  link: String,
-  sector: String,
-  study_type: String,
-  title: String,
+  deadlines: {
+    type: Object,
+    schema: {
+      eea: {
+        type: String,
+        required: true
+      },
+      nonEea: {
+        type: String,
+        required: true
+      }
+    },
+    required: true
+  },
+  startDate: {
+    type: String,
+    required: true
+  },
+  applicationRequirements: {
+    type: Array,
+    schema: [String],
+    required: true
+  },
+  languageRequirements: {
+    type: Array,
+    schema: [String],
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  studyinnlLink: {
+    type: String,
+    required: false
+  },
+  programWebsite: {
+    type: String,
+    required: true
+  },
+  university: {
+    type: String,
+    required: true
+  },
+  universityType: {
+    type: String,
+    required: true
+  },
+  universityLogoLink: {
+    type: String,
+    required: true
+  },
+  address: {
+    type: String,
+    required: true
+  },
+  country: {
+    type: String,
+    required: true
+  },
+  city: {
+    type: String,
+    required: true
+  }
+}, {
+  timestamps: true
 });

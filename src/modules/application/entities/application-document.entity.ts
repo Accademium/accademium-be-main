@@ -4,61 +4,51 @@ import {
   Column, 
   CreateDateColumn, 
   UpdateDateColumn, 
-  ManyToOne, 
-  JoinColumn
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Application } from './application.entity';
 import { DocumentApprovalStatus } from '../../../utils/enums/document-approval-status.enum';
+import { UserDocument } from '../../user/entities/user-document.entity';
 import { ApplicationDocumentType } from '../../../utils/enums/document-type.enum';
 
-@Entity('documents')
+@Entity('applicationDocuments')
 export class ApplicationDocument {
   @PrimaryGeneratedColumn('uuid')
-  documentId: string;
+  applicationDocumentId: string;
 
-  @ManyToOne(() => Application)
+  @ManyToOne(
+    () => Application, application => application.applicationDocuments,
+    { nullable: false })
   @JoinColumn({ name: 'applicationId' })
   application: Application;
 
-  @Column({
-    type: 'enum',
-    enum: ApplicationDocumentType
-  })
-  documentType: ApplicationDocumentType;
+  @ManyToOne(
+    () => UserDocument, userDocument => userDocument.applicationDocuments,
+    { nullable: true })
+  @JoinColumn({ name: 'userDocumentId' })
+  userDocument: UserDocument;
 
   @Column()
-  s3Key: string;
-
-  @Column()
-  fileName: string;
-
-  @Column('integer')
-  fileSize: number;
-
-  @Column()
-  mimeType: string;
-
-  @Column({
-    type: 'enum',
-    enum: DocumentApprovalStatus,
-    default: DocumentApprovalStatus.PENDING
-  })
   approvalStatus: DocumentApprovalStatus;
+
+  @Column()
+  documentType: ApplicationDocumentType;
 
   @Column({ nullable: true })
   approvedBy: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ nullable: true })
   approvalDate: Date;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ nullable: true })
   rejectionReason: string;
 
-  @Column('integer', { default: 1 })
-  version: number;
+  @Column()
+  isMandatory: boolean;
 
-  @Column({ default: true })
-  isMandatory: boolean
+  @Column({ nullable: true, type: 'text' })
+  description: string;
 
   @CreateDateColumn()
   createdAt: Date;

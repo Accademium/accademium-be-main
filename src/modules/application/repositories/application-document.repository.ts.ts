@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ApplicationKey, DocumentKey } from 'src/utils/interfaces/keys';
 import { Repository } from 'typeorm';
 import { ApplicationDocument } from '../entities/application-document.entity';
-import { DocumentApprovalStatus } from 'src/utils/enums/document-approval-status.enum';
+import { CreateApplicationDocumentDto } from '../dto/application-dtos/create-application-document.dto';
+import { UpdateApplicationDocumentDto } from '../dto/application-dtos/update-application-document.dto';
 
 @Injectable()
 export class ApplicationDocumentRepository {
@@ -29,62 +29,48 @@ export class ApplicationDocumentRepository {
   /**
    * Find a specific document by application ID and document ID
    * @param documentId - The ID of the document
-   * @returns Promise<ApplicationDocument | null> - The document or null if not found
+   * @returns Promise<ApplicationDocument> - The document or null if not found
    */
     async findByDocumentId(
       documentId: string,
     ): Promise<ApplicationDocument> {
-      const document = this.repository.findOne({
-        where: { documentId },
+      return this.repository.findOne({
+        where: { applicationDocumentId: documentId },
         relations: ['application', 'user'],
       });
-      if (!document) {
-        throw new Error('Document not found');
-      } 
-      return document;
     }
 
   /**
-   * Update the approval status of a document
-   * @param applicationId - The ID of the application
-   * @param documentId - The ID of the document
-   * @param approvalStatus - The new approval status
-   * @returns Promise<ApplicationDocument | null> - The updated document or null if not found
-   */
-  async updateApprovalStatus(
-    documentId: string,
-    approvalStatus: DocumentApprovalStatus,
-    approvedBy?: string,
-    rejectionReason?: string,
-  ): Promise<ApplicationDocument> {
-    const document: ApplicationDocument = await this.findByDocumentId(documentId);
-    document.approvalStatus = approvalStatus;
-
-    if (approvalStatus === DocumentApprovalStatus.APPROVED) {
-      document.approvedBy = approvedBy;
-      document.approvalDate = new Date();
-    } else if (approvalStatus === DocumentApprovalStatus.REJECTED) {
-      document.rejectionReason = rejectionReason;
-    }
-  
-    return await this.repository.save(document);
-  }
-
-  /**
-   * 
+   * TODO
    * @param applicationId 
    * @param documentData 
    * @returns 
    */
-  async save(
-    applicationId: string,
-    documentData: Partial<ApplicationDocument>
+  async createApplicationDocument(
+    documentData: CreateApplicationDocumentDto
   ): Promise<ApplicationDocument> {
-    const document = this.repository.create({
-      ...documentData,
-      application: {applicationId}
-    });
-
+    const document = this.repository.create(documentData);
     return this.repository.save(document);
+  }
+
+  /**
+   * TODO
+   * @param applicationDocumentId 
+   * @param applicationData 
+   * @returns 
+   */
+  async updateApplicationDocument(
+    applicationDocumentId: string, 
+    applicationData: UpdateApplicationDocumentDto
+  ) {
+    const applicationDocument: ApplicationDocument = await this.findByDocumentId(applicationDocumentId);
+
+    if (!applicationDocument) {
+      throw new NotFoundException(`Application document with ID ${applicationDocumentId} not found.`);
+    }
+  
+    Object.assign(applicationDocument, applicationData);
+  
+    return await this.repository.save(applicationDocument);
   }
 }

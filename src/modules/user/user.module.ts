@@ -5,14 +5,28 @@ import { CognitoClientModule } from 'src/aws/cognito/cognito-client.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { UserRepository } from './repositories/user.repository';
+import { UserDocumentService } from './services/user.document.service';
+import { UserDocument } from './entities/user-document.entity';
+import { UserDocumentRepository } from './repositories/user.document.repository';
+import { S3Service } from 'src/aws/s3/s3.service';
+import { S3Module } from 'src/aws/s3/s3.module';
 
 @Module({
   imports: [
     CognitoClientModule, 
-    TypeOrmModule.forFeature([User])
+    TypeOrmModule.forFeature([UserDocument, User]),
+    S3Module
   ],
   controllers: [UserController],
-  providers: [UserService, UserRepository],
-  exports: [UserService],
+  providers: [
+    UserService, 
+    UserRepository,
+    UserDocumentService,
+    UserDocumentRepository
+  ],
+  exports: [
+    UserService, 
+    UserDocumentService
+  ],
 })
 export class UserModule {}

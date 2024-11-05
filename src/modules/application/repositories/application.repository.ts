@@ -18,7 +18,7 @@ export class ApplicationRepository {
    * @param userId - The ID of the user
    * @returns Promise<Application[]> - A list of applications
    */
-  async findByUserId(userId: string): Promise<Application[]> {
+  async findAllApllicationsByUserId(userId: string): Promise<Application[]> {
     const applications = await this.repository.find({
       where: { user: { userId } },
       order: {
@@ -38,7 +38,7 @@ export class ApplicationRepository {
    * @param applicationId - The ID of the application
    * @returns Promise<Application> - The application or null if not found
    */
-  async findByApplicationId(
+  async findApplicationById(
     applicationId: string,
   ): Promise<Application> {
     const application = await this.repository.findOne({
@@ -59,7 +59,7 @@ export class ApplicationRepository {
    * @param status - {@link ApplicationStatus} The new status
    * @returns Promise<Application> - The updated application or null if not found
    */
-  async updateStatus(
+  async updateApplicationStatus(
     applicationId: string,
     status: ApplicationStatus,
   ): Promise<Application> {
@@ -81,7 +81,7 @@ export class ApplicationRepository {
    * @param applicationData - {@link UpdateApplicationDto} The new data
    * @returns Promise<Application> - The updated application or null if not found
    */
-  async update(
+  async updateApplication(
     applicationId: string,
     applicationData: UpdateApplicationDto,
   ): Promise<Application> {
@@ -96,13 +96,10 @@ export class ApplicationRepository {
    * @param application - The application data
    * @returns Promise<Application> - The created application
    */
-  async create(userId: string, applicationData: CreateApplicationDto): Promise<Application> {
-    const application = this.repository.create({
-      ...applicationData,
-      status: ApplicationStatus.CREATED,
-      user: {userId: userId}
-    });
-
+  async createApplication(
+    applicationData: CreateApplicationDto
+  ): Promise<Application> {
+    const application = this.repository.create(applicationData);
     return this.repository.save(application);
   }
 }

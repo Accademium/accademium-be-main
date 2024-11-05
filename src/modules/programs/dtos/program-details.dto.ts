@@ -1,27 +1,30 @@
 export interface ProgramDetails {
-  program_id: string;
-  address: string;
-  city: string;
-  dates: {
-    START_DATE: string;
-    DEADLINE_EU: string;
-    DEADLINE_NON_EU: string;
-  };
-  description: string;
+  programId: string;
+  programName: string;
   duration: string;
-  ects: string;
+  ects: number;
+  graduationTitle: string;
   fees: {
-    EU: string;
-    INSTITUTIONAL: string;
-    NON_EU: string;
+    eea: number;
+    nonEea: number;
+    institutional: number;
   };
-  field: string;
-  institutionLink: string;
-  institutionLogo: string;
-  institutionName: string;
-  language: string;
-  link: string;
-  sector: string;
-  studyType: string;
-  title: string;
+  deadlines: {
+    eea: string;
+    nonEea: string;
+  };
+  startDate: string;
+  applicationRequirements: string[];
+  languageRequirements: string[];
+  description: string;
+  studyinnlLink?: string;
+  programWebsite: string;
+  university: string;
+  universityType: string;
+  universityLogoLink: string;
+  address: string;
+  country: string;
+  city: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

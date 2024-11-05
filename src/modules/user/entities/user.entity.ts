@@ -1,25 +1,23 @@
 import { Application } from "../../application/entities/application.entity";
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, OneToMany, PrimaryColumn } from 'typeorm';
+import { UserDocument } from "./user-document.entity";
 
 @Entity('users')
 export class User {
   @PrimaryColumn('varchar', { length: 36 })
   userId: string;
 
-  @OneToMany(() => Application, (application) => application.user)
-  applications: Application[];
-
   @Column({ unique: true })
   email: string;
 
-  @Column()
-  first_name: string;
+  @Column({ nullable: true })
+  firstName: string;
 
-  @Column()
-  last_name: string;
+  @Column({ nullable: true })
+  lastName: string;
 
   @Column({ type: 'date', nullable: true })
-  date_of_birth: Date;
+  dateOfBirth: Date;
 
   @Column({ nullable: true })
   phone: string;
@@ -31,20 +29,26 @@ export class User {
   nationality: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  language_skills: Record<string, string>;
+  languageSkills: Record<string, string>;
 
   @Column({ nullable: true })
-  current_education_level: string;
+  currentEducationLevel: string;
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 
   @Column({ default: true })
-  is_active: boolean;
+  isActive: boolean;
 
   @Column({ type: 'timestamp', nullable: true })
-  last_login: Date;
+  lastLogin: Date;
+
+  @OneToMany(() => UserDocument, userDocument => userDocument.user)
+  userDocuments: UserDocument[];
+
+  @OneToMany(() => Application, app => app.user)
+  applications: Application[];
 }

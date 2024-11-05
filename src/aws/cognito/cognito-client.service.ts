@@ -10,7 +10,6 @@ import {
   AdminDeleteUserCommand,
   AdminRespondToAuthChallengeCommand,
   ChangePasswordCommand,
-  AuthenticationResultType,
 } from '@aws-sdk/client-cognito-identity-provider';
 import {
   ChangePasswordRequest,
@@ -50,10 +49,13 @@ export class CognitoService {
 
   /**
    * Registers a new student user in Cognito with the provided registration details.
+   * 
    * @param registerDto  {@link RegistrationRequest} - An object containing the registration data, including email, password, and organization ID.
    * @throws {AwsException} If the signup process fails.
    */
-  async createStudent(registerDto: RegistrationRequest) {
+  async createStudent(
+    registerDto: RegistrationRequest
+  ) {
     try {
       return await this.cognitoClient.send(
         new SignUpCommand({
@@ -80,6 +82,7 @@ export class CognitoService {
 
   /**
    * Creates a new B2B user in Cognito with a temporary password.
+   * 
    * @param adminCreateUserRequest {@link AdminCreateUserRequest} - Data object containing tempPassword, email, and organisationId.
    * @throws {AwsException} If the user creation fails.
    */
@@ -113,6 +116,7 @@ export class CognitoService {
 
   /**
    * Adds a user to a specified Cognito group.
+   * 
    * @param adminAddUserToGroupRequest {@link AdminAddUserToGroupRequest} - Data object containing userGroup and email.
    * @throws {AwsException} If adding the user to the group fails.
    */
@@ -138,8 +142,9 @@ export class CognitoService {
 
   /**
    * Initiates an authentication request for a user with provided credentials.
+   * 
    * @param loginDto  {@link LoginRequest} - Contains user credentials such as email and password.
-   * @returns The authentication response, including tokens or challenges.
+   * @returns {AuthResultCognito} The authentication response, including tokens or challenges.
    * @throws {AwsException} If the authentication fails.
    * @throws {AccademiumException} If the challenge is unsupported.
    */

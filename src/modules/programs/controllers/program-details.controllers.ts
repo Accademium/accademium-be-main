@@ -8,11 +8,11 @@ export class ProgramDetailsController {
 
   // TODO: Replace ProgramDetails with DTO
   @Get(':id')
-  async getProgramDetails(
+  async findProgramDetails(
     @Param('id') key: string,
   ): Promise<ProgramDetails> {
     console.log('Controller Details: ' + key);
-    return await this.programDetailsService.getProgramDetails(key);
+    return await this.programDetailsService.findProgramDetails(key);
   }
 
   // TODO: Replace ProgramDetails with DTO
@@ -22,7 +22,6 @@ export class ProgramDetailsController {
   async createProgramDetailsList(
     @Body() programDetailsList: ProgramDetails[],
   ): Promise<void> {
-    console.log('start');
     this.programDetailsService.createProgramDetailsList(programDetailsList);
   }
 
@@ -38,8 +37,9 @@ export class ProgramDetailsController {
   }
 
   @Get('study_type/:study_type')
-  async getProgramsByStudyType(@Param('study_type') study_type: string) {
-    //: Promise<ProgramCore[]>
-    return await this.programDetailsService.getProgramsByStudyType(study_type);
+  async findProgramsByStudyType(
+    @Param('study_type') study_type: string
+  ): Promise<ProgramDetails[]> {
+    return await this.programDetailsService.findProgramsByStudyType(study_type);
   }
 }

@@ -14,6 +14,7 @@ import { DatabaseModule } from './database/database.module';
 
 import databaseConfig from './config/database.config'
 import awsConfig from './config/aws-config.service'
+import { S3Module } from './aws/s3/s3.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import awsConfig from './config/aws-config.service'
     }),
     DatabaseModule,
     DynamoModule,
+    S3Module,
     UserModule,
     ProgramsModule,
     UniversityModule,

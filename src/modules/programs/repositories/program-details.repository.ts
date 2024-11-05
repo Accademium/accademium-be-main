@@ -9,9 +9,10 @@ export class ProgramDetailsRepository {
     private programDetailsModel: Model<ProgramDetails, string>,
   ) {}
 
-  async get(key: string): Promise<ProgramDetails> {
-    console.log('Details: ' + key);
-    return await this.programDetailsModel.get(key);
+  async findById(
+    id: string
+  ): Promise<ProgramDetails> {
+    return await this.programDetailsModel.get(id);
   }
 
   async create(programDetails: ProgramDetails): Promise<ProgramDetails> {

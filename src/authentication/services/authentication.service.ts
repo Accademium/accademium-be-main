@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CognitoService } from 'src/aws/cognito/cognito-client.service';
 import { JwtService } from '@nestjs/jwt';
-import { generateRandomPassword } from 'src/utils/passport/randomPasswordGenerator';
+import { generateRandomPassword } from 'src/utils/passwort/randomPasswordGenerator';
 import {
   ChangePasswordRequest,
   CreateB2BUserRequest,
