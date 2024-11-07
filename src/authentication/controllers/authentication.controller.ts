@@ -1,13 +1,17 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthenticationService } from '../services/authentication.service';
 import {
   RegistrationRequest,
-  LoginRequest,
   VerifyUserRequest,
   ChangePasswordRequest,
 } from 'src/modules/user/dto/user.auth.dto';
 import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
-import { AuthResult } from '../dtos/auth-login-accademium.dto';
+import { LocalAuthGuard } from '../guards/local-auth.guard';
+import { User } from 'src/modules/user/entities/user.entity';
+import { Response } from 'express';
+import { CurrentUser } from '../decorators/current-user.decorator';
+import { CognitoResponse } from '../decorators/cognito-rsp.decorator';
+import { AuthResultCognito } from '../dtos/auth-login-cognito.dto';
 
 @Controller('api/v1/auth/')
 export class AuthenticationController {
@@ -38,15 +42,20 @@ export class AuthenticationController {
     return 'Student registered successfully. Please check your email for verification.';
   }
 
+
   /**
    * Authenticates a user and returns a JWT token.
-   * @param loginDto {@link LoginRequest} - The login credentials.
-   * @returns An object containing the JWT token.
+   * @param req 
+   * @returns 
    */
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginRequest): Promise<AuthResult>  {
-    return await this.authService.loginUser(loginDto);
+  @UseGuards(LocalAuthGuard)
+  async login(
+    @CognitoResponse() cognitoResponse: AuthResultCognito,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    await this.authService.loginUser(cognitoResponse, response);
   }
 
   /**
@@ -56,8 +65,10 @@ export class AuthenticationController {
    */
   @Post('verify')
   @HttpCode(HttpStatus.OK)
-  async verify(@Body() verifyDto: VerifyUserRequest): Promise<string> {
-    await this.authService.verifyUser(verifyDto);
+  async verify(
+    @Body() verifyDto: VerifyUserRequest
+  ): Promise<string> {
+    await this.authService.verifyCode(verifyDto);
     return 'User verified successfully. You can login now with your credentials.';
   }
 

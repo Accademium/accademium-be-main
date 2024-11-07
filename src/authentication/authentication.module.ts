@@ -6,10 +6,16 @@ import { RefreshJwtStrategy } from './strategies/refreshToken-strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from 'src/modules/user/user.module';
 import { CognitoClientModule } from 'src/aws/cognito/cognito-client.module';
+import { LocalStrategy } from './strategies/local.strategy';
 
 @Module({
   controllers: [AuthenticationController],
-  providers: [AuthenticationService, JwtStrategy, RefreshJwtStrategy],
+  providers: [
+    AuthenticationService, 
+    LocalStrategy,
+    JwtStrategy, 
+    RefreshJwtStrategy
+  ],
   imports: [
     JwtModule.register({
       secret: `${process.env.jwt_secret}`,

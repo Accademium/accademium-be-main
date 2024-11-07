@@ -12,7 +12,9 @@ import {
 import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
 import { UserService } from 'src/modules/user/services/user.service';
 import { TokenTypes } from 'src/utils/enums/token.enum';
-import { AuthResult } from '../dtos/auth-login-accademium.dto';
+import { AuthResultCognito } from '../dtos/auth-login-cognito.dto';
+import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthenticationService {
@@ -20,6 +22,7 @@ export class AuthenticationService {
     private readonly cognitoService: CognitoService,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly configService: ConfigService
   ) {}
 
   /**
@@ -45,26 +48,59 @@ export class AuthenticationService {
     return tempPassword;
   }
 
-  /**
-   * Authenticates a user using Cognito and returns a signed JWT token.
-   * @param loginDto {@link LoginRequest} - The login credentials, including email and password.
-   * @returns A signed JWT token if authentication is successful.
-   */
-  async loginUser(loginDto: LoginRequest): Promise<AuthResult> {
-    const decoded = await this.authenticateWithCognitoAndDecodeToken(loginDto);
+/**
+ * Handles user login by creating JWT tokens and setting them as cookies.
+ * @param authResult The result from the Cognito authentication, containing the IdToken.
+ * @param response The HTTP response object used to set cookies.
+ * @param redirect Optional flag to indicate if a redirect should occur after login.
+ */
+  async loginUser(authResult: AuthResultCognito, response: Response, redirect = false): Promise<void> {
+    const { IdToken } = authResult.authenticationResult;
+    const decoded = this.jwtService.decode(IdToken) as Record<string, any>;
     const userId = decoded['sub'];
+  
     this.updateLastUserLogin(userId);
-    const authToken = this.createJWTToken(decoded);
-    const refreshToken = this.createJWTRefreshToken(userId);
-    
-    return {userId, authToken, refreshToken, tokenType: 'Bearer'};
+  
+    const accessTokenData = this.createJWTToken(decoded);
+    const refreshTokenData = this.createJWTRefreshToken(userId);
+  
+    const expiresAccessToken = accessTokenData.expirationDate;
+    const expiresRefreshToken = refreshTokenData.expirationDate;
+  
+    // Set cookies for Authentication and Refresh tokens
+    response.cookie('Authentication', accessTokenData.accessToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'prod',
+      expires: expiresAccessToken,
+    });
+  
+    response.cookie('Refresh', refreshTokenData.accessToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'prod',
+      expires: expiresRefreshToken,
+    });
+  
+    // Optionally redirect after login
+    if (redirect) {
+      response.redirect(this.configService.getOrThrow('AUTH_UI_REDIRECT'));
+    }
+  }
+
+  /**
+   * 
+   * @param email 
+   * @param password 
+   * @returns 
+   */
+  async verifyUser(request: LoginRequest): Promise<AuthResultCognito> {
+    return await this.cognitoService.initiateAuth(request);
   }
 
   /**
    * Verifies a user by confirming their sign-up with a verification code.
    * @param verifyDto {@link VerifyUserRequest}- Data containing the email and verification code.
    */
-  async verifyUser(verifyDto: VerifyUserRequest): Promise<void> {
+  async verifyCode(verifyDto: VerifyUserRequest): Promise<void> {
     await this.cognitoService.confirmSignUp(verifyDto);
   }
 
@@ -89,38 +125,69 @@ export class AuthenticationService {
       changeInitialPasswordRequest,
     );
   }
-  
-  private async authenticateWithCognitoAndDecodeToken(loginDto: LoginRequest) {
-    const response = await this.cognitoService.initiateAuth(loginDto);
-    const { IdToken } = response.authenticationResult;
-    return this.jwtService.decode(IdToken) as Record<string, any>;
-  }
 
   private async updateLastUserLogin(userId: string) {
     await this.userService.updateLastLogin(userId);
   }
 
-  private createJWTToken(decoded: Record<string, any>): string {
-    return this.jwtService.sign(
-      {
-        username: decoded['cognito:username'],
-        email: decoded.email,
-        groups: decoded['cognito:groups'],
-        organisationId: decoded['custom:organisationId'],
-        type: TokenTypes.ACCADEMIUM_ACCESS_TOKEN,
-      },
-      { expiresIn: '1h' },
+  /**
+   * Creates a JWT access token for the user with an expiration date.
+   * @param decoded The decoded user information from the IdToken.
+   * @returns An object containing the generated access token and its expiration date.
+   */
+  private createJWTToken(decoded: Record<string, any>) {
+    return this.createToken(
+      decoded['sub'],
+      this.configService.getOrThrow<string>('JWT_ACCESS_TOKEN_EXPIRATION_MS'),
+      decoded['cognito:username'],
+      decoded.email,
+      decoded['cognito:groups'],
+      decoded['custom:organisationId'],
+      TokenTypes.ACCADEMIUM_ACCESS_TOKEN,
     );
   }
 
-  private createJWTRefreshToken(userId: string): string {
-    return this.jwtService.sign(
-      {
-        id: userId,
-        type: TokenTypes.ACCADEMIUM_REFRESH_TOKEN
-      },
-      { expiresIn: '7d' },
+  /**
+   * Creates a JWT refresh token for the user with an expiration date.
+   * @param userId The ID of the user for whom the refresh token is being created.
+   * @returns An object containing the generated refresh token and its expiration date.
+   */
+  private createJWTRefreshToken(userId: string) {
+    return this.createToken(
+      userId,
+      this.configService.getOrThrow<string>('JWT_REFRESH_TOKEN_EXPIRATION_MS'),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      TokenTypes.ACCADEMIUM_REFRESH_TOKEN,
     );
+  }
+  
+  private createToken(
+    userId: string,
+    expirationMs: string,
+    username?: string,
+    email?: string,
+    groups?: string[],
+    organisationId?: string,
+    tokenType?: string,
+  ) {
+    const expirationDate = new Date();
+    expirationDate.setMilliseconds(expirationDate.getTime() + parseInt(expirationMs));
+  
+    const tokenPayload: Record<string, any> = { userId, type: tokenType };
+  
+    if (username) tokenPayload['username'] = username;
+    if (email) tokenPayload['email'] = email;
+    if (groups) tokenPayload['groups'] = groups;
+    if (organisationId) tokenPayload['organisationId'] = organisationId;
+  
+    const accessToken = this.jwtService.sign(tokenPayload, {
+      expiresIn: expirationMs,
+    });
+  
+    return { accessToken, expirationDate };
   }
 
   private async createB2BUserAndAddToGroup(tempPassword: string, createB2BUser: CreateB2BUserRequest) {
