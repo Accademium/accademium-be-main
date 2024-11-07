@@ -1,6 +1,7 @@
 import { Application } from "../../application/entities/application.entity";
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, OneToMany, PrimaryColumn } from 'typeorm';
 import { UserDocument } from "./user-document.entity";
+import { RefreshToken } from "../../../authentication/entities/user-refresh-token.entity";
 
 @Entity('users')
 export class User {
@@ -51,4 +52,7 @@ export class User {
 
   @OneToMany(() => Application, app => app.user)
   applications: Application[];
+
+  @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
+  refreshTokens: RefreshToken[];
 }

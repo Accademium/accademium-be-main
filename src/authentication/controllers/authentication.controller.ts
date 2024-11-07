@@ -4,13 +4,14 @@ import {
   RegistrationRequest,
   VerifyUserRequest,
   ChangePasswordRequest,
+  UserDto,
 } from 'src/modules/user/dto/user.auth.dto';
 import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { Response } from 'express';
-import { CognitoResponse } from '../decorators/cognito-rsp.decorator';
-import { AuthResultCognito } from '../dtos/auth-login-cognito.dto';
 import { JwtGuard } from '../guards/jwt-auth.guard';
+import { JwtRefreshAuthGuard } from '../guards/jwt-refresh.guard';
+import { CurrentUser } from '../decorators/cognito-rsp.decorator';
 
 @Controller('api/v1/auth/')
 export class AuthenticationController {
@@ -54,10 +55,20 @@ export class AuthenticationController {
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   async login(
-    @CognitoResponse() cognitoResponse: AuthResultCognito,
+    @CurrentUser() user: UserDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    await this.authService.loginUser(cognitoResponse, response);
+    await this.authService.loginUser(user, response);
+  }
+
+  @Post('refresh')
+  @UseGuards(JwtRefreshAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @CurrentUser() user: UserDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    await this.authService.loginUser(user, response);
   }
 
   /**
@@ -69,9 +80,8 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   async verifyCode(
     @Body() verifyDto: VerifyUserRequest
-  ): Promise<string> {
+  ): Promise<void> {
     await this.authService.verifyCode(verifyDto);
-    return 'User verified successfully. You can login now with your credentials.';
   }
 
   /**
@@ -81,8 +91,6 @@ export class AuthenticationController {
    */
   @Post('create-b2b-admin')
   @UseGuards(JwtGuard)
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles('PlatformAdminGroup')
   @HttpCode(HttpStatus.CREATED)
   async createB2BAdmin(
     @Body() registrationDto: RegistrationRequest,
@@ -102,8 +110,6 @@ export class AuthenticationController {
    */
   @Post('create-b2b-moderator')
   @UseGuards(JwtGuard)
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles('B2BAdminGroup')
   @HttpCode(HttpStatus.CREATED)
   async createB2BModerator(
     @Body() registrationDto: RegistrationRequest,
@@ -123,7 +129,6 @@ export class AuthenticationController {
    */
   @Post('pass/change')
   @UseGuards(JwtGuard)
-  // @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async changePassword(
     @Body() changePasswordRequest: ChangePasswordRequest,

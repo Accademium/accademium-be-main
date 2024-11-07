@@ -1,20 +1,31 @@
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { AuthenticationService } from '../services/authentication.service';
+import { Request } from 'express';
+import { TokenPayload } from 'src/utils/interfaces/token-payload.interface';
 
-// export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'jwt-refresh',) {
-//   constructor(
-//     configService: ConfigService,
-//   ) {
-//     super({
-//       jwtFromRequest: ExtractJwt.fromBodyField('refresh'),
-//       ignoreExpiration: false,
-//       secretOrKey: configService.getOrThrow<string>('jwt.secret'),
-//     });
-//   }
+@Injectable()
+export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
+  constructor(
+    configService: ConfigService,
+    private readonly authService: AuthenticationService,
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: Request) => request.cookies?.Refresh,
+      ]),
+      secretOrKey: configService.getOrThrow<string>('jwt.secret'),
+      passReqToCallback: true,
+    });
+  }
 
-//   async validate(payload: any) {
-//     console.log('validate jwt payload');
-//     return { user: payload.sub, username: payload.username };
-//   }
-// }
+  async validate(request: Request, payload: TokenPayload) {
+    const user = await this.authService.veryifyUserRefreshToken(
+      request.cookies?.Refresh,
+      payload.userId,
+    );
+    return user
+  }
+}

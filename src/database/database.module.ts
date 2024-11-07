@@ -8,6 +8,7 @@ import { Application } from '../modules/application/entities/application.entity'
 import { ProgramMetadata } from '../modules/programs/entities/program-metadata.entity';
 import { UniversityDetails } from '../modules/university/entities/university-details.entity';
 import { UserDocument } from '../modules/user/entities/user-document.entity';
+import { RefreshToken } from 'src/authentication/entities/user-refresh-token.entity';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { UserDocument } from '../modules/user/entities/user-document.entity';
           ApplicationDocument,
           ProgramMetadata,
           UniversityDetails,
+          RefreshToken,
         ],
         synchronize: false,
         migrations: ['dist/database/migrations/*{.ts,.js}'],

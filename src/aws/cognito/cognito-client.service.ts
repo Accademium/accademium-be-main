@@ -10,11 +10,13 @@ import {
   AdminDeleteUserCommand,
   AdminRespondToAuthChallengeCommand,
   ChangePasswordCommand,
+  AdminListGroupsForUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import {
   ChangePasswordRequest,
   LoginRequest,
   RegistrationRequest,
+  UserDto,
 } from 'src/modules/user/dto/user.auth.dto';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
 import { CognitoErrorMessage } from '../enums/aws-error-message.enum';
@@ -222,24 +224,47 @@ export class CognitoService {
 
   /**
    * Retrieves information about a specific user from Cognito.
-   * @param email {@link string} - The email of the user to retrieve.
+   * @param userId {@link string} - The userId of the user to retrieve.
    * @throws {AwsException} If retrieving the user information fails.
    */
-  async adminGetUser(email: string) {
+  async adminGetUser(userId: string): Promise<UserDto> {
     try {
-      return await this.cognitoClient.send(
+      const userResponse = await this.cognitoClient.send(
         new AdminGetUserCommand({
           UserPoolId: this.config.get('aws.userPoolId'),
-          Username: email,
+          Username: userId,
         }),
       );
-    } catch (error) {
-      this.handleCognitoError(
-        error,
-        `Failed to information for user ${email}`,
-        CognitoErrorMessage.COGNITO_GET_USER_DATA_FAILED,
+
+      const groupsResponse = await this.cognitoClient.send(
+        new AdminListGroupsForUserCommand({
+          UserPoolId: this.config.get('aws.userPoolId'),
+          Username: userId,
+        }),
       );
+
+      const email = this.extractValueFromUserAttributes(userResponse, 'email');
+      const organisationId = this.extractValueFromUserAttributes(userResponse, 'custom:organisationId',);
+      const sub = this.extractValueFromUserAttributes(userResponse, 'sub');
+      const groups = groupsResponse.Groups?.map((group) => group.GroupName) || [];
+
+      return {
+        userId: sub,
+        email: email,
+        groups: groups[0],
+        organisationId: organisationId,
+      };
+    } catch (error) {
+      this.logger.error('Failed to retrieve user profile', error);
+      throw error;
     }
+  }
+
+  private extractValueFromUserAttributes(
+    userResponse: any,
+    key: string
+  ): string {
+    return userResponse.UserAttributes.find((attr: { Name: string; }) => attr.Name === key,)?.Value;
   }
 
   /**

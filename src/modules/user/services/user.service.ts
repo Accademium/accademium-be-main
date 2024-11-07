@@ -3,6 +3,7 @@ import { CognitoService } from 'src/aws/cognito/cognito-client.service';
 import { User } from '../entities/user.entity';
 import { UserRepository } from '../repositories/user.repository';
 import { CreateUserDto, UpdateUserDto } from '../dto/user-management.dto';
+import { UserDto } from '../dto/user.auth.dto';
 
 @Injectable()
 export class UserService {
@@ -13,17 +14,15 @@ export class UserService {
 
   /**
    * Retrieves the profile information of a user by their email.
-   * @param email - The email address of the user.
+   * @param userId - The userId address of the user.
    * @returns An object containing user attributes and account creation date from Cognito.
    * @throws InternalServerErrorException if there is an error retrieving the profile.
    */
   async findCognitoUserProfile(
-    email: string,
-  ): Promise<{ UserAttributes: any; UserCreateDate: Date }> {
+    userId: string,
+  ): Promise<UserDto> {
     try {
-      const response = await this.cognitoService.adminGetUser(email);
-      const { UserAttributes, UserCreateDate } = response;
-      return { UserAttributes, UserCreateDate };
+      return await this.cognitoService.adminGetUser(userId);
     } catch (error) {
       throw new InternalServerErrorException(
         'Failed to retrieve user profile',

@@ -8,27 +8,32 @@ import { UserRepository } from './repositories/user.repository';
 import { UserDocumentService } from './services/user.document.service';
 import { UserDocument } from './entities/user-document.entity';
 import { UserDocumentRepository } from './repositories/user.document.repository';
-import { S3Service } from 'src/aws/s3/s3.service';
 import { S3Module } from 'src/aws/s3/s3.module';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
+import { RefreshToken } from '../../authentication/entities/user-refresh-token.entity';
 
 @Module({
   imports: [
     CognitoClientModule, 
-    TypeOrmModule.forFeature([UserDocument, User]),
+    TypeOrmModule.forFeature([
+      UserDocument,
+      User,
+    ]),
     S3Module
   ],
-  controllers: [UserController],
+  controllers: [
+    UserController
+  ],
   providers: [
     UserService, 
     UserRepository,
     UserDocumentService,
     UserDocumentRepository,
-    ErrorHandlingService
+    ErrorHandlingService,
   ],
   exports: [
     UserService, 
-    UserDocumentService
+    UserDocumentService,
   ],
 })
 export class UserModule {}

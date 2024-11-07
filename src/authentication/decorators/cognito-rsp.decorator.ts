@@ -1,9 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-const getCognitoResponseByContext = (context: ExecutionContext) =>
+const getCurrentUserFromContext = (context: ExecutionContext) =>
   context.switchToHttp().getRequest().user;
 
-export const CognitoResponse = createParamDecorator(
+export const CurrentUser = createParamDecorator(
   (_data: unknown, context: ExecutionContext) =>
-    getCognitoResponseByContext(context),
+    getCurrentUserFromContext(context),
 );

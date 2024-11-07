@@ -44,3 +44,14 @@ export class ChangePasswordRequest {
   @IsString()
   newPassword: string;
 }
+
+export class UserDto {
+  @IsString()
+  userId: string;
+  @IsString()
+  email: string;
+  @IsString()
+  groups: string;
+  @IsString()
+  organisationId: string;
+}
