@@ -1,7 +1,8 @@
-import { Controller, Get, Put, Body, Param, Post } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Post, UseGuards } from '@nestjs/common';
 import { ProgramMetadataService } from '../services/program-metadata.service';
 import { CreateProgramMetadataDto, ProgramMetadataDTO, UpdateProgramMetadataDto } from '../dtos/program-metadata.dto';
 import { CountryEnum } from 'src/utils/enums/country.enum';
+import { JwtGuard } from 'src/authentication/guards/jwt-auth.guard';
 
 @Controller('api/v1/program-metadata/')
 export class ProgramMetadataController {
@@ -12,9 +13,8 @@ export class ProgramMetadataController {
     return await this.programMetadataService.findProgramMetadata(id);
   }
 
-  // TODO: Add @UseGuards(JwtAuthGuard) for authentication
-  // TODO: Add @Roles(Role.ADMIN) for authorization
   @Put(':id')
+  @UseGuards(JwtGuard)
   async updateProgramCore(
     @Param('id') id: string,
     @Body() program: UpdateProgramMetadataDto,
@@ -31,6 +31,7 @@ export class ProgramMetadataController {
   }
 
   @Post()
+  @UseGuards(JwtGuard)
   async createProgramCoreList(
     @Body() programMetadataList: CreateProgramMetadataDto[],
   ): Promise<void> {

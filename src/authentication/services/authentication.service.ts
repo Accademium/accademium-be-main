@@ -138,7 +138,7 @@ export class AuthenticationService {
   private createJWTToken(decoded: Record<string, any>) {
     return this.createToken(
       decoded['sub'],
-      this.configService.getOrThrow<string>('JWT_ACCESS_TOKEN_EXPIRATION_MS'),
+      this.configService.getOrThrow<string>('jwt.accessTokenExpiration'),
       decoded['cognito:username'],
       decoded.email,
       decoded['cognito:groups'],
@@ -155,7 +155,7 @@ export class AuthenticationService {
   private createJWTRefreshToken(userId: string) {
     return this.createToken(
       userId,
-      this.configService.getOrThrow<string>('JWT_REFRESH_TOKEN_EXPIRATION_MS'),
+      this.configService.getOrThrow<string>('jwt.refreshTokenExpiration'),
       undefined,
       undefined,
       undefined,
@@ -184,6 +184,7 @@ export class AuthenticationService {
     if (organisationId) tokenPayload['organisationId'] = organisationId;
   
     const accessToken = this.jwtService.sign(tokenPayload, {
+      secret: this.configService.getOrThrow<string>('jwt.secret'),
       expiresIn: expirationMs,
     });
   

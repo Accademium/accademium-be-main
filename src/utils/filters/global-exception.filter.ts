@@ -14,6 +14,8 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
     const request = ctx.getRequest();
 
     this.logger.debug('Exception caught! Request path:' + request?.url);
+    this.logger.debug('exception: ' + JSON.stringify(exception));
+    this.logger.log('request.cookies: ', request.cookies)
 
     if (exception instanceof BaseException) {
       const errorResponse: any = {

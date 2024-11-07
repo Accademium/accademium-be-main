@@ -1,7 +1,8 @@
-import { Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { ApplicationService } from '../services/application.service';
 import { ApplicationStatus } from 'src/utils/enums/application-status.enum';
 import { ApplicationAggregatedDto, ApplicationDto } from '../dto/application-dtos/application.dto';
+import { JwtGuard } from 'src/authentication/guards/jwt-auth.guard';
 
 @Controller('api/v1/applications/')
 export class ApplicationController {
@@ -10,6 +11,7 @@ export class ApplicationController {
   ) {}
 
   @Get(':userId/all')
+  @UseGuards(JwtGuard)
   async findAllApplicationsForUser(
     @Param('userId') userId: string,
   ): Promise<ApplicationAggregatedDto[]> {
@@ -17,6 +19,7 @@ export class ApplicationController {
   }
 
   @Get(':applicationId')
+  @UseGuards(JwtGuard)
   async findApplicationForUser(
     @Param('applicationId') applicationId: string,
   ): Promise<ApplicationDto> {
@@ -24,6 +27,7 @@ export class ApplicationController {
   }
 
   @Put(':userId/:applicationId/:status')
+  @UseGuards(JwtGuard)
   async updateApplicationStatus(
     @Param('applicationId') applicationId: string,
     @Param('status') status: ApplicationStatus,
@@ -35,6 +39,7 @@ export class ApplicationController {
   }
 
   @Post(':userId/:programId')
+  @UseGuards(JwtGuard)
   async createApplication(
     @Param('userId') userId: string,
     @Param('programId') programId: string,

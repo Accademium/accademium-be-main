@@ -15,6 +15,7 @@ import { DatabaseModule } from './database/database.module';
 import databaseConfig from './config/database.config'
 import awsConfig from './config/aws-config.service'
 import { S3Module } from './aws/s3/s3.module';
+import jwtConfig from './config/jwt.config';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { S3Module } from './aws/s3/s3.module';
       isGlobal: true,
       load: [
         databaseConfig, 
-        awsConfig
+        awsConfig,
+        jwtConfig,
       ],
     }),
     DatabaseModule,

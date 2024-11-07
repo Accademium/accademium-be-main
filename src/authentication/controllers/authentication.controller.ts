@@ -7,11 +7,10 @@ import {
 } from 'src/modules/user/dto/user.auth.dto';
 import { ChangeInitialPasswordRequest } from 'src/modules/user/dto/user.cognito.dto';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
-import { User } from 'src/modules/user/entities/user.entity';
 import { Response } from 'express';
-import { CurrentUser } from '../decorators/current-user.decorator';
 import { CognitoResponse } from '../decorators/cognito-rsp.decorator';
 import { AuthResultCognito } from '../dtos/auth-login-cognito.dto';
+import { JwtGuard } from '../guards/jwt-auth.guard';
 
 @Controller('api/v1/auth/')
 export class AuthenticationController {
@@ -22,9 +21,11 @@ export class AuthenticationController {
    * @returns A test string.
    */
   @Post('test')
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  async test(): Promise<string> {
-    return 'Test.';
+  async test(
+  ) {
+    return "test";
   }
 
   /**
@@ -33,6 +34,7 @@ export class AuthenticationController {
    * @returns A success message upon successful registration.
    */
   @Post('register')
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.CREATED)
   async registerStudent(
     @Body() registerDto: RegistrationRequest,
@@ -49,8 +51,8 @@ export class AuthenticationController {
    * @returns 
    */
   @Post('login')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
+  @HttpCode(HttpStatus.OK)
   async login(
     @CognitoResponse() cognitoResponse: AuthResultCognito,
     @Res({ passthrough: true }) response: Response,
@@ -65,7 +67,7 @@ export class AuthenticationController {
    */
   @Post('verify')
   @HttpCode(HttpStatus.OK)
-  async verify(
+  async verifyCode(
     @Body() verifyDto: VerifyUserRequest
   ): Promise<string> {
     await this.authService.verifyCode(verifyDto);
@@ -78,6 +80,7 @@ export class AuthenticationController {
    * @returns A message with the temporary password for the newly created B2B Admin.
    */
   @Post('create-b2b-admin')
+  @UseGuards(JwtGuard)
   // @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles('PlatformAdminGroup')
   @HttpCode(HttpStatus.CREATED)
@@ -98,6 +101,7 @@ export class AuthenticationController {
    * @returns A message with the temporary password for the newly created B2B Moderator.
    */
   @Post('create-b2b-moderator')
+  @UseGuards(JwtGuard)
   // @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles('B2BAdminGroup')
   @HttpCode(HttpStatus.CREATED)
@@ -118,6 +122,7 @@ export class AuthenticationController {
    * @returns A success message upon changing the password.
    */
   @Post('pass/change')
+  @UseGuards(JwtGuard)
   // @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async changePassword(
@@ -128,6 +133,7 @@ export class AuthenticationController {
   }
 
   @Post('pass/change/init')
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   async changeInitialPassword(
     @Body() changeInitialPasswordRequest: ChangeInitialPasswordRequest,
