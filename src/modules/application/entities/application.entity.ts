@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { User } from '../../user/entities/user.entity';
 import { ApplicationStatus } from '../../../utils/enums/application-status.enum';
 import { ApplicationDocument } from './application-document.entity';
+import { ProgramMetadata } from '../../programs/entities/program-metadata.entity';
 
 @Entity('applications')
 export class Application {
@@ -14,6 +15,12 @@ export class Application {
   @JoinColumn({ name: 'userId' })
   user: User;
 
+  @ManyToOne(() => ProgramMetadata, (program) => program.applications, { 
+    nullable: false
+  })
+  @JoinColumn({ name: 'programId' })
+  program: ProgramMetadata;
+
   @Column({
     type: 'enum',
     enum: ApplicationStatus,
@@ -22,19 +29,7 @@ export class Application {
   status: ApplicationStatus;
 
   @Column({ nullable: false })
-  programId: string;
-
-  @Column({ nullable: false })
-  programName: string;
-
-  @Column({ nullable: false })
   universityName: string;
-  
-  @Column({ nullable: false })
-  city: string;
-
-  @Column({ nullable: false })
-  country: string;
 
   @Column({ nullable: true, type: 'timestamp' })
   submissionDate: Date;
@@ -51,7 +46,7 @@ export class Application {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => ApplicationDocument, (document) => document.application, {
+  @OneToMany(() => ApplicationDocument, (applicationDocuments) => applicationDocuments.application, {
     cascade: true,
   })
   applicationDocuments: ApplicationDocument[];

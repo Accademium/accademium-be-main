@@ -56,13 +56,9 @@ export class ApplicationDocumentController {
       userId,
       documentType,
       file,
-      // file.originalname,
-      // file.buffer,
-      // file.mimetype,
-      // file.size,
     );
 
-    await this.applicationDocumentService.assignUserDocumentToApplicationDocument(
+    this.applicationDocumentService.assignUserDocumentToApplicationDocument(
       applicationDocumentId,
       userDocument,
     );

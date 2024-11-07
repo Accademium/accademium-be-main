@@ -1,5 +1,5 @@
 import { ApplicationStatus } from "src/utils/enums/application-status.enum";
-import { DocumentDto } from "../document-dtos/document.dto";
+import { ApplicationDocumentDto } from "../document-dtos/document.dto";
 import { ProgramUniversityLocation } from "src/utils/interfaces/program-university-location.inteface";
 import { Expose, Transform, Type } from 'class-transformer';
 
@@ -11,9 +11,11 @@ export class ApplicationDto {
     status: ApplicationStatus;
 
     @Expose()
+    @Transform(({ obj }) => obj.program.program_id)
     programId: string;
 
     @Expose()
+    @Transform(({ obj }) => obj.program.programName)
     programName: string;
 
     @Expose()
@@ -21,8 +23,8 @@ export class ApplicationDto {
 
     @Expose()
     @Transform(({ obj }) => ({
-        city: obj.city,
-        country: obj.country
+        city: obj.program.city,
+        country: obj.program.country
     }))
     location: ProgramUniversityLocation;
 
@@ -41,7 +43,8 @@ export class ApplicationDto {
 }
 
 export class ApplicationAggregatedDto extends ApplicationDto {
+    @Transform(({ obj }) => obj.applicationDocuments)
     @Expose()
-    @Type(() => DocumentDto)
-    documents?: DocumentDto[];
+    @Type(() => ApplicationDocumentDto)
+    documents: ApplicationDocumentDto[];
 }

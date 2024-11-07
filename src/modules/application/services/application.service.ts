@@ -2,35 +2,37 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { ApplicationRepository } from '../repositories/application.repository';
 import { ApplicationStatus, ApplicationStatusGroup, STATUS_GROUPS } from 'src/utils/enums/application-status.enum';
 import { ApplicationAggregatedDto, ApplicationDto } from '../dto/application-dtos/application.dto';
-import { ApplicationMapper } from '../mappers/application.mapper';
-import { ApplicationAggregatedMapper } from '../mappers/application-aggregated.mapper';
 import { ProgramMetadataService } from 'src/modules/programs/services/program-metadata.service';
-import { CreateApplicationDto } from '../dto/application-dtos/create-application.dto';
 import { ApplicationDocumentService } from './application-document.service';
+import { CountryEnum } from 'src/utils/enums/country.enum';
+import { UserService } from 'src/modules/user/services/user.service';
+import { User } from 'src/modules/user/entities/user.entity';
+import { ProgramMetadata } from 'src/modules/programs/entities/program-metadata.entity';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ApplicationService {
   constructor(
     private readonly applicationRepository: ApplicationRepository,
-    private readonly applicationMapper: ApplicationMapper,
-    private readonly applicationAggregatedMapper: ApplicationAggregatedMapper,
     private readonly programMetadataService: ProgramMetadataService,
-    private readonly applicationDocumentService: ApplicationDocumentService
+    private readonly applicationDocumentService: ApplicationDocumentService,
   ) {}
 
   /**
    * Get all applications for a user
    * @param userId - The ID of the user
-   * @returns Promise<ApplicationDto[]> - A list of applications
+   * @returns {Promise<ApplicationAggregatedDto[]>} - A list of applications
    */
-  async findAllApplicationsForUser(
+  async findUserApplications(
     userId: string
-  ): Promise<ApplicationDto[]> {
-    const applications = await this.applicationRepository.findAllApllicationsByUserId(userId);
+  ): Promise<ApplicationAggregatedDto[]> {
+    const applications = await this.applicationRepository.findAllUserApplications(userId);
     if (!applications.length) {
       throw new NotFoundException(`No applications found for user ${userId}`);
     }
-    return this.applicationMapper.toDtoArray(applications);
+    return plainToInstance(ApplicationAggregatedDto, applications, {
+      excludeExtraneousValues: true
+    });
   }
 
   /**
@@ -39,18 +41,18 @@ export class ApplicationService {
    * @returns Promise<ApplicationAggregatedDto> - The application
    * @throws NotFoundException if the application is not found
    */
-  async findAggregatedApplicationForUser(
-    applicationId: string,
+  async findAggregatedApplication(
+    applicationId: string
   ): Promise<ApplicationAggregatedDto> {
-    const application = await this.applicationRepository.findApplicationById(
-      applicationId,
-    );
+    const application = await this.applicationRepository.findApplicationById( applicationId );
     if (!application) {
       throw new NotFoundException(
         `Application ${applicationId} not found`,
       );
     }
-    return this.applicationAggregatedMapper.toDto(application);
+    return plainToInstance(ApplicationAggregatedDto, application, {
+      excludeExtraneousValues: true
+    });
   }
 
   /**
@@ -65,7 +67,7 @@ export class ApplicationService {
     applicationId: string,
     status: ApplicationStatus,
   ): Promise<ApplicationDto> {
-    const application = await this.findAggregatedApplicationForUser(applicationId);
+    const application = await this.findAggregatedApplication(applicationId);
     
     // Validate status transition
     if (!this.isValidAdminStatusTransition(application.status, status)) {
@@ -76,10 +78,16 @@ export class ApplicationService {
 
     const updatedApplciation = await this.applicationRepository.updateApplicationStatus(applicationId, status);
     
-    return this.applicationMapper.toDto(updatedApplciation);
+    return plainToInstance(ApplicationDto, updatedApplciation, {
+      excludeExtraneousValues: true
+    });
   }
 
   /**
+   * TODO add transaction
+   * TODO make reference to ProgramMetadata
+   * TODO remove programName, universityName, city and country from Application
+   * 
    * Create a new application for a user
    * @param userId - The ID of the user
    * @param programId - The program id
@@ -88,24 +96,23 @@ export class ApplicationService {
   async createApplication(
     userId: string,
     programId: string,
+    country: CountryEnum = CountryEnum.NETHERLANDS,
   ): Promise<ApplicationDto> {
-    const program = await this.programMetadataService.findProgramMetadata(programId);
-    // TODO add country as university property and enum
-    const country = 'NE';
-    const application = await this.applicationRepository.createApplication({
-      userId,
-      programId,
-      programName: program.program_title,
-      universityName: program.university.university,
-      city: program.city,
-      country: 'NE',
-      status: ApplicationStatus.CREATED,
-      notes: '',
-    });
-
-    this.applicationDocumentService.createDefaultApplicationDocument(application.applicationId, country);
-
-    return this.applicationMapper.toDto(application);
+    try {
+      const application = await this.applicationRepository.createApplication({
+        user: { userId } as User,
+        program: { program_id: programId } as ProgramMetadata,
+        status: ApplicationStatus.CREATED,
+        universityName: (await this.programMetadataService.findProgramMetadata(programId)).university.university,
+        notes: '',
+      });
+      await this.applicationDocumentService.createDefaultApplicationDocument(application, country);
+      return plainToInstance(ApplicationDto, application, {
+        excludeExtraneousValues: true
+      });
+    } catch (error) {
+      console.log(error.stack)
+    }
   }
 
   /**
@@ -135,7 +142,9 @@ export class ApplicationService {
     }
 
     const updatedApplication = await this.applicationRepository.updateApplicationStatus(applicationId, newStatus);
-    return this.applicationMapper.toDto(updatedApplication);
+    return plainToInstance(ApplicationDto, updatedApplication, {
+      excludeExtraneousValues: true
+    });
   }
 
   /**
@@ -167,7 +176,9 @@ export class ApplicationService {
       notes: notes ? `${application.notes ? application.notes + '\n' : ''}${notes}` : application.notes
     });
 
-    return this.applicationMapper.toDto(updatedApplication);
+    return plainToInstance(ApplicationDto, updatedApplication, {
+      excludeExtraneousValues: true
+    });
   }
 
   private isValidAdminStatusTransition(

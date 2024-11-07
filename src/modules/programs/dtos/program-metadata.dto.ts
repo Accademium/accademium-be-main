@@ -39,7 +39,5 @@ export class ProgramMetadataDTO {
   language: string;
   city: string;
   fields: string[];
-  created_at: Date;
-  updated_at: Date;
   university: UniversityDetailsDto;
 }

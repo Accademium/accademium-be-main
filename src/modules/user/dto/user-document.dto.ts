@@ -11,7 +11,7 @@ export class CreateUserDocumentDto {
     @IsString() 
     s3Key: string;
     @IsNumber() 
-    size: number;
+    fileSize: number;
     @IsString() 
     mimeType: string; 
 }

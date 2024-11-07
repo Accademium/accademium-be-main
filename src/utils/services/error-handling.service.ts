@@ -13,8 +13,8 @@ export class ErrorHandlingService {
    * Logs errors and performs any additional error handling tasks.
    * Use this method when you want to log an error without throwing it.
    *
-   * @param error
-   * @param context
+   * @param error {@link Error} 
+   * @param context Service where the error occured
    */
   logError(error: Error, context: string): void {
     if (error instanceof AwsException) {
@@ -36,6 +36,8 @@ export class ErrorHandlingService {
         error.stack,
       );
     }
+    this.logger.debug(`Caught error of type: ${error.constructor.name}`);
+
   }
 
   /**
@@ -48,28 +50,6 @@ export class ErrorHandlingService {
   logErrorAndThrow(error: Error, context: string): never {
     this.logError(error, context);
     throw error;
-  }
-
-  handleUnexpectedError(
-    serviceName: string,
-    methodName: string,
-    error: any,
-  ): void {
-    this.logger.error(
-      `[ACCADEMIUM:UNEXPECTED_ERROR] Unexpected error occurred in ${serviceName}.${methodName}: ${error.message || error}`,
-      error.stack
-    );
-
-    if (error instanceof BaseException) {
-      throw error;
-    } else {
-      throw new AccademiumException(
-        `An unexpected error occurred in the ${serviceName} while processing the request. For more details, check the log.`,
-        'UNEXPECTED_ERROR',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        serviceName,
-      );
-    }
   }
 
   handleDynamoSerachError(error: any, searchName: string, source: string): never {

@@ -26,7 +26,7 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
       if (exception instanceof AwsException) {
         errorResponse.awsErrorCode = exception.awsErrorCode;
         errorResponse.requestId = exception.requestId;
-        // Only include serviceSpecificDetails in non-production environments
+        // ONLY serviceSpecificDetails in NON-production environments
         if (process.env.NODE_ENV !== 'prod') {
           errorResponse.serviceSpecificDetails =
             exception.serviceSpecificDetails;

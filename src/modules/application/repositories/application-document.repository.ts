@@ -31,12 +31,11 @@ export class ApplicationDocumentRepository {
    * @param documentId - The ID of the document
    * @returns Promise<ApplicationDocument> - The document or null if not found
    */
-    async findByDocumentId(
-      documentId: string,
+    async findByApplicationDocumentId(
+      applicationDocumentId: string,
     ): Promise<ApplicationDocument> {
       return this.repository.findOne({
-        where: { applicationDocumentId: documentId },
-        relations: ['application', 'user'],
+        where: { applicationDocumentId: applicationDocumentId },
       });
     }
 
@@ -62,15 +61,8 @@ export class ApplicationDocumentRepository {
   async updateApplicationDocument(
     applicationDocumentId: string, 
     applicationData: UpdateApplicationDocumentDto
-  ) {
-    const applicationDocument: ApplicationDocument = await this.findByDocumentId(applicationDocumentId);
-
-    if (!applicationDocument) {
-      throw new NotFoundException(`Application document with ID ${applicationDocumentId} not found.`);
-    }
-  
-    Object.assign(applicationDocument, applicationData);
-  
-    return await this.repository.save(applicationDocument);
+  ): Promise<ApplicationDocument> {  
+    await this.repository.update(applicationDocumentId, applicationData);
+    return this.findByApplicationDocumentId(applicationDocumentId);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AIClient } from '../ai/ai.client';
 import { RecommendationRequestDto } from '../dtos/recommendation-request.dto';
 import { Recommendation, RecommendationResponseDto } from '../dtos/recommendation-response.dto';
@@ -13,7 +13,7 @@ import {
 } from '../interfaces/survey-result.interface';
 import { SurveyKey } from 'src/utils/interfaces/keys';
 import { SurveyUtils } from '../utils/survey.utils';
-import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
+import { AccademiumException } from 'src/utils/exceptions/accademium.exception';
 
 @Injectable()
 export class SurveyService {
@@ -25,64 +25,67 @@ export class SurveyService {
     private readonly surveyResultRepository: SurveyResultRepository,
     private readonly programMetadataService: ProgramMetadataService,
     private readonly surveyUtils: SurveyUtils,
-    private readonly errorhandlingService: ErrorHandlingService,
   ) {}
 
+  /**
+   * 
+   * @param surveyRequest 
+   * @param userId 
+   * @returns 
+   * @throws 
+   */
   async processSurveyFieldRecommendations(
     surveyRequest: RecommendationRequestDto,
     userId: string,
   ): Promise<RecommendationResponseDto> {
-    try {
-      const answers = surveyRequest.answers;
+    const answers = surveyRequest.answers;
 
-      const recommendations =
-        await this.fetchAIFieldRecommendations(answers);
+    const recommendations =
+      await this.fetchAIFieldRecommendations(answers);
 
-      const studyFields: string[] = this.extractStudyFieldsFromRecommendations(
-        recommendations,
-      );
+    const studyFields: string[] = this.extractStudyFieldsFromRecommendations(
+      recommendations,
+    );
 
-      const surveyId = await this.saveInitialSurveyAnswers(
-        studyFields,
-        userId,
-        answers,
-      );
+    const surveyId = await this.saveInitialSurveyAnswers(
+      studyFields,
+      userId,
+      answers,
+    );
 
-      return {recommendations, surveyId: surveyId.surveyId, userId};
-    } catch (error) {
-      this.errorhandlingService.handleUnexpectedError(
-        this.SERVICE_NAME,
-        'processSurveyFieldRecommendations',
-        error,
-      );
-    }
+    return {recommendations, surveyId: surveyId.surveyId, userId};
   }
 
+  /**
+   * 
+   * @param surveyId 
+   * @param userId 
+   * @param field 
+   * @returns 
+   */
   async processSurveyProgramRecommendations(
     surveyId: SurveyKey,
     userId: string,
     field: string,
   ): Promise<UniversityProgramResponseDto> {
-    try {
-      const programRecommendationsDto =
-        await this.fetchAIProgramRecommendations(surveyId, userId, field);
+    const programRecommendationsDto =
+      await this.fetchAIProgramRecommendations(surveyId, userId, field);
 
-      const programs: string[] = this.extractProgramsFromRecommendations(
-        programRecommendationsDto,
-      );
+    const programs: string[] = this.extractProgramsFromRecommendations(
+      programRecommendationsDto,
+    );
 
-      this.updateSurvey(field, surveyId, programs);
-
-      return programRecommendationsDto;
-    } catch (error) {
-      this.errorhandlingService.handleUnexpectedError(
-        this.SERVICE_NAME,
-        'processSurveyProgramRecommendations',
-        error,
-      );
-    }
+    this.updateSurvey(field, surveyId, programs);
+    return programRecommendationsDto;
   }
 
+  /**
+   * 
+   * @param surveyId 
+   * @param userId 
+   * @param field 
+   * @returns 
+   */
   private async fetchAIProgramRecommendations(
     surveyId: SurveyKey,
     userId: string,
@@ -98,6 +101,13 @@ export class SurveyService {
     return new UniversityProgramResponseDto(response, surveyId);
   }
 
+  /**
+   * 
+   * @param fieldRecommendations 
+   * @param userId 
+   * @param answers 
+   * @returns 
+   */
   private async saveInitialSurveyAnswers(
     fieldRecommendations: string[],
     userId: string,
@@ -114,6 +124,12 @@ export class SurveyService {
     return { surveyId: createdSurveyResult.surveyId };
   }
 
+  /**
+   * 
+   * @param field 
+   * @param surveyId 
+   * @param programRecommendations 
+   */
   private updateSurvey(
     field: string,
     surveyId: SurveyKey,
@@ -128,6 +144,11 @@ export class SurveyService {
     this.surveyResultRepository.update(surveyId, updatedResult);
   }
 
+  /**
+   * TODO
+   * @param answers 
+   * @returns 
+   */
   private async fetchAIFieldRecommendations(
     answers: Record<number, string>,
   ): Promise<Recommendation[]> {
@@ -136,28 +157,52 @@ export class SurveyService {
     return airesponse.recommendations;
   }
 
+  /**
+   * TODO
+   * @param surveyId 
+   * @param userId 
+   * @returns 
+   */
   private async formatSurveyAnswers(
     surveyId: SurveyKey,
     userId: string,
   ): Promise<string> {
-    const surveyResults =
-      await this.surveyResultRepository.findBySurveyIdAndUserId(
-        surveyId,
-        userId,
+    const surveyResults = await this.surveyResultRepository.findBySurveyIdAndUserId( surveyId, userId );
+
+    if (surveyResults[0] && surveyResults[0].answers) {
+      return this.surveyUtils.formatSurveyAnswers(surveyResults[0].answers);
+    } else {
+      this.logger.error(`User with id = ${userId} has no survey with id = ${surveyId}.`);
+      throw new AccademiumException(
+        `User with id = ${userId} has no survey with id = ${surveyId}.`,
+        'ITEM_NOT_FOUND',
+        HttpStatus.BAD_REQUEST,
+        this.SERVICE_NAME,
       );
-    return this.surveyUtils.formatSurveyAnswers(surveyResults[0].answers);
+    }  
   }
 
+  /**
+   * TODO
+   * @param field 
+   * @returns {Set<string>}
+   * @throws {AccademiumException}
+   */
   private async fetchAndFormatProgramsForField(
     field: string,
   ): Promise<Set<string>> {
-    const programs = await this.programMetadataService.findProgramsByFieldAndType(
-      field,
-      'bachelor',
-    );
+    const degreeType = 'bachelor';
+    const programs = await this.programMetadataService.findProgramsByFieldAndDegreeType( field, degreeType );
     return new Set(programs.flatMap((program) => program.generalized_name));
   }
 
+  /**
+   * TODO
+   * @param userId 
+   * @param answers 
+   * @param fieldRecommendations 
+   * @returns 
+   */
   private createPartialSurveyResultOmit(
     userId: string,
     answers: Record<number, string>,
@@ -173,6 +218,12 @@ export class SurveyService {
     };
   }
 
+  /**
+   * TODO
+   * @param selectedField 
+   * @param programRecommendations 
+   * @returns 
+   */
   private createSelectedSurveyField(
     selectedField: string,
     programRecommendations: string[],
@@ -183,6 +234,11 @@ export class SurveyService {
     };
   }
 
+  /**
+   * TODO
+   * @param recommendations 
+   * @returns 
+   */
   private extractStudyFieldsFromRecommendations(
     recommendations: Recommendation[],
   ): string[] {
@@ -191,6 +247,11 @@ export class SurveyService {
     );
   }
 
+  /**
+   * TODO
+   * @param recommendationsDTO 
+   * @returns 
+   */
   private extractProgramsFromRecommendations(
     recommendationsDTO: UniversityProgramResponseDto,
   ): string[] {

@@ -8,12 +8,7 @@ import { ApplicationDocumentController } from './controllers/application-documen
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Application } from './entities/application.entity';
 import { ApplicationDocument } from './entities/application-document.entity';
-import { ApplicationMapper } from './mappers/application.mapper';
-import { ApplicationAggregatedMapper } from './mappers/application-aggregated.mapper';
-import { ProgramMetadataService } from '../programs/services/program-metadata.service';
-import { ProgramMetadataRepository } from '../programs/repositories/program-metadata.repository';
 import { ProgramsModule } from '../programs/programs.module';
-import { UserDocumentService } from '../user/services/user.document.service';
 import { UserModule } from '../user/user.module';
 
 @Module({
@@ -33,9 +28,7 @@ import { UserModule } from '../user/user.module';
     ApplicationService,
     ApplicationDocumentService,
     ApplicationRepository,
-    ApplicationDocumentRepository,
-    ApplicationMapper,
-    ApplicationAggregatedMapper,
+    ApplicationDocumentRepository
   ],
   exports: [
     ApplicationService, 

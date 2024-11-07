@@ -18,14 +18,14 @@ export class ApplicationRepository {
    * @param userId - The ID of the user
    * @returns Promise<Application[]> - A list of applications
    */
-  async findAllApllicationsByUserId(userId: string): Promise<Application[]> {
+  async findAllUserApplications(userId: string): Promise<Application[]> {
     const applications = await this.repository.find({
       where: { user: { userId } },
+      relations: ['program'],
       order: {
         createdAt: 'DESC'
       }
     });
-
     if (!applications.length) {
       throw new NotFoundException(`No applications found for user ${userId}`);
     }
@@ -34,23 +34,18 @@ export class ApplicationRepository {
   }
 
   /**
-   * Find a specific application by application ID
+   * Find a specific application by application ID and user ID
    * @param applicationId - The ID of the application
-   * @returns Promise<Application> - The application or null if not found
+   * @param userId - The ID of the user
+   * @returns Promise<Application> - The application or throws NotFoundException if not found
    */
   async findApplicationById(
-    applicationId: string,
+    applicationId: string
   ): Promise<Application> {
-    const application = await this.repository.findOne({
-      where: { applicationId },
-      relations: ['documents']
+    return await this.repository.findOne({
+      where: { applicationId, },
+      relations: ['applicationDocuments', 'program'],
     });
-
-    if (!application) {
-      throw new NotFoundException(`Application ${applicationId} not found`);
-    }
-
-    return application;
   }
 
   /**

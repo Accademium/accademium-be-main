@@ -1,6 +1,7 @@
 import { Controller, Get, Put, Body, Param, Post } from '@nestjs/common';
 import { ProgramMetadataService } from '../services/program-metadata.service';
 import { CreateProgramMetadataDto, ProgramMetadataDTO, UpdateProgramMetadataDto } from '../dtos/program-metadata.dto';
+import { CountryEnum } from 'src/utils/enums/country.enum';
 
 @Controller('api/v1/program-metadata/')
 export class ProgramMetadataController {
@@ -21,12 +22,12 @@ export class ProgramMetadataController {
     return await this.programMetadataService.updateProgramMetadata(id, program);
   }
 
-  @Get(':field/:type') 
-  async findProgramsByFieldAnd(
-    @Param('field') field: string,
-    @Param('type') type: string,
+  @Get(':name/:country') 
+  async findSuggestedProgramsByNameAndCountry(
+    @Param('name') name: string,
+    @Param('country') country: CountryEnum,
   ): Promise<ProgramMetadataDTO[]> {
-    return await this.programMetadataService.findProgramsByFieldAndType(field, type);
+    return await this.programMetadataService.findSuggestedProgramsByNameAndCountry(name, country);
   }
 
   @Post()

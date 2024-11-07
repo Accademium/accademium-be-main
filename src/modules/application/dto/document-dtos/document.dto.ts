@@ -2,7 +2,7 @@ import { Expose } from "class-transformer";
 import { DocumentApprovalStatus } from "src/utils/enums/document-approval-status.enum";
 import { ApplicationDocumentType } from "src/utils/enums/document-type.enum";
 
-export class DocumentDto {
+export class ApplicationDocumentDto {
   @Expose({ name: 'documentId' })
   id: string;
   @Expose()

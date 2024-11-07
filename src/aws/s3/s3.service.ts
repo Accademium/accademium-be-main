@@ -1,19 +1,24 @@
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { HttpCode, HttpStatus, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { AwsException } from 'src/utils/exceptions/aws.exception';
+import { AccademiumErrorCode } from 'src/utils/enums/accademium-error-code.enum';
+import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
 
 @Injectable()
 export class S3Service {
+    private readonly SERVICE_NAME: string = 'S3Service';
     private readonly s3Client: S3Client;
     private readonly bucketName: string;
     private readonly logger = new Logger(S3Service.name);
   
     constructor(
-        private configService: ConfigService
+        private configService: ConfigService,
+        private readonly errorHandlingService: ErrorHandlingService,
     ) {
       this.s3Client = new S3Client({
-        region: this.configService.get<string>('aws.region'),
+        region: this.configService.get<string>('aws.regionDynamo'),
         credentials: {
           accessKeyId: this.configService.get<string>('aws.accessKeyId'),
           secretAccessKey: this.configService.get<string>('aws.secretAccessKey'),
@@ -48,9 +53,10 @@ export class S3Service {
                     Key: key,
                     Body: buffer,
                     ContentType: mimetype,
-                    Metadata: {
-                    userId,
-                    mentorId,
+                    Metadata:  
+                    {
+                        userId,
+                        mentorId,
                     },
                     ACL: 'private',
               }),
@@ -60,7 +66,13 @@ export class S3Service {
             return key;
         } catch (error) {
             this.logger.error(`Failed to upload document: ${error.message}`);
-            throw error; //TODO thow better exception
+            this.errorHandlingService.createAwsException(
+                error,
+                `Failed to upload document: ${error.message}`,
+                AccademiumErrorCode.S3_UPLOAD_ERROR,
+                HttpStatus.BAD_REQUEST,
+                this.SERVICE_NAME,
+            );
         }
     }
 

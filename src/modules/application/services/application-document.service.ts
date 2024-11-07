@@ -1,15 +1,18 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { ApplicationDocumentRepository } from '../repositories/application-document.repository.ts.js';
+import { ApplicationDocumentRepository } from '../repositories/application-document.repository.js';
 import { ApplicationDocument } from '../entities/application-document.entity.js';
 import { DocumentApprovalStatus } from '../../../utils/enums/document-approval-status.enum.js';
 import { ApplicationDocumentType } from '../../../utils/enums/document-type.enum.js';
 import { CreateApplicationDocumentDto } from '../dto/application-dtos/create-application-document.dto.js';
 import { UserDocument } from '../../user/entities/user-document.entity.js';
 import { UpdateApplicationDocumentDto } from '../dto/application-dtos/update-application-document.dto.js';
+import { Application } from '../entities/application.entity.js';
+import { CountryEnum } from 'src/utils/enums/country.enum.js';
+
 
 @Injectable()
 export class ApplicationDocumentService {
-  private readonly SERVICE_NAME = 'ProgramCoreService';
+  private readonly SERVICE_NAME = 'ApplicationDocumentService';
   private readonly logger = new Logger(ApplicationDocumentService.name);
 
   constructor(
@@ -19,7 +22,7 @@ export class ApplicationDocumentService {
   /**
    * Get all documents for an application
    * @param applicationId - The ID of the application
-   * @returns Promise<ApplicationDocument[]> - A list of application documents
+   * @returns List of {@link ApplicationDocument}
    */
   async findAllDocumentsForApplication(
     applicationId: string,
@@ -30,13 +33,13 @@ export class ApplicationDocumentService {
   /**
    * Get details of a specific document
    * @param documentId - The ID of the document
-   * @returns {@link ApplicationDocument} - The document details
-   * @throws {@link NotFoundException} if the document is not found
+   * @returns The document details {@link ApplicationDocument}
+   * @throws Error {@link NotFoundException} and logs if the document is not found
    */
   async findDocumentDetails(
     documentId: string,
   ): Promise<ApplicationDocument> {
-    const document = this.applicationDocumentRepository.findByDocumentId(documentId);
+    const document = this.applicationDocumentRepository.findByApplicationDocumentId(documentId);
 
     if (!document) {
       throw new Error('Document not found');
@@ -47,13 +50,13 @@ export class ApplicationDocumentService {
   /**
    * Update the approval status of a document
    * @param applicationDocumentId - The ID of the {@link ApplicationDocument}
-   * @param approvalStatus - The new approval status
+   * @param approvalStatus {@link DocumentApprovalStatus} - The new approval status
    * @param approvedBy - Optional parameter to set the user, who approved the document
    * @param rejectionReason - Optional parameter to set the reason of the rejection
-   * @returns {@link ApplicationDocument} - The updated document
-   * @throws {@link NotFoundException} if the document is not found
-   * @throws {@link BadRequestException} if there is no approver but the {@link DocumentApprovalStatus} is set to APPROVED
-   * @throws {@link BadRequestException} if there is no rejection reason but the {@link DocumentApprovalStatus} is set to REJECTED
+   * @returns The updated document {@link ApplicationDocument}  
+   * @throws Error {@link NotFoundException} if the document is not found
+   * @throws Error {@link BadRequestException} if there is no approver but the {@link DocumentApprovalStatus} is set to APPROVED
+   * @throws Error {@link BadRequestException} if there is no rejection reason but the {@link DocumentApprovalStatus} is set to REJECTED
    */
   async updateApplicationDocumentApprovalStatus(
     applicationDocumentId: string,
@@ -84,9 +87,8 @@ export class ApplicationDocumentService {
 
   /**
    * Creates a new application document associated with a specific application ID.
-   * @param applicationId - The unique identifier of the application to associate with the document.
-   * @param documentData - The data for the document, excluding 'documentId', 'applicationId', and 'uploadDate', which will be generated or assigned automatically.
-   * @returns The created application document.
+   * @param documentData {@link CreateApplicationDocumentDto} - The data for the document, excluding 'documentId', 'applicationId', and 'uploadDate', which will be generated or assigned automatically.
+   * @returns The created {@link ApplicationDocument}.
    */
   async createApplicationDocument(
     documentData: CreateApplicationDocumentDto,
@@ -95,39 +97,48 @@ export class ApplicationDocumentService {
   }
 
   /**
+   * Creates the default application documents for the given application based on the country.
+   * If the country is 'NE' (Netherlands), it creates the default documents for the Netherlands (CV, motivational letter...).
+   * If the country is not 'NE', it logs an error message.
    * 
-   * @param applicationId 
-   * @param country
+   * @param application {@link Aplication} - The application for which the default documents should be created.
+   * @param country {@link CountryEnum}- The country for which the default documents should be created.
+   * @returns void
    */
   async createDefaultApplicationDocument(
-    applicationId: string, 
-    country: string
+    application: Application, 
+    country: CountryEnum
   ): Promise<void> {
     if (country == 'NE') { // TODO migrato to enum (look at application.service.ts)
-      this.createDefaultApplicationDocumentForNetherland(applicationId);
+      this.createDefaultApplicationDocumentForNetherland(application);
     } else {
       this.logger.error(`There are no defined defaut application documents for country ${country}.`)
     }
   }
 
   /**
-   * 
-   * @param applicationDocumentId 
-   * @param userDocumentId 
+   * Assigns a user document to the specified application document.
+   * @param applicationDocumentId - The ID of the application document to which the user document should be assigned.
+   * @param userDocument - The user document to be assigned.
+   * @returns void
    */
   async assignUserDocumentToApplicationDocument(
     applicationDocumentId: string, 
     userDocument: UserDocument
-  ) {
+  ): Promise<void> {
     this.applicationDocumentRepository.updateApplicationDocument(applicationDocumentId, { userDocument });
   }
 
   /**
-   * 
-   * @param applicationId 
+   * Creates the default application documents for the Netherlands.
+   * It defines an array of default document configurations, including the document type, mandatory status, and description.
+   * It then creates a new ApplicationDocument entity for each default document configuration, associated with the provided application.
+   * The created ApplicationDocument entities have their approvalStatus set to DocumentApprovalStatus.NOT_UPLOADED, as the documents have not been uploaded yet.
+   * @param application - The application for which the default documents should be created.
+   * @returns void
    */
   private createDefaultApplicationDocumentForNetherland(
-    applicationId: string
+    application: Application,
   ): void {
     const defaultDocuments = [
       { documentType: ApplicationDocumentType.ID_OR_PASSPORT, isMandatory: true, description: "A copy of passport or ID card." },
@@ -140,7 +151,7 @@ export class ApplicationDocumentService {
 
     for (const doc of defaultDocuments) {
       this.applicationDocumentRepository.createApplicationDocument({
-        applicationId: applicationId,
+        application: application,
         approvalStatus: DocumentApprovalStatus.NOT_UPLOADED,
         documentType: doc.documentType,
         isMandatory: doc.isMandatory,

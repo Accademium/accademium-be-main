@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProgramMetadata } from '../entities/program-metadata.entity';
 import { CreateProgramMetadataDto, UpdateProgramMetadataDto } from '../dtos/program-metadata.dto';
+import { CountryEnum } from 'src/utils/enums/country.enum';
 
 @Injectable()
 export class ProgramMetadataRepository {
@@ -40,13 +41,35 @@ export class ProgramMetadataRepository {
    * @param type - The degree type to search for.
    * @returns A list of programs matching the field and degree type.
    */
-  async findByFieldAndType(field: string, type: string): Promise<ProgramMetadata[]> {
+  async findByFieldAndType(
+    field: string, 
+    type: string
+  ): Promise<ProgramMetadata[]> {
     return await this.programRepository
       .createQueryBuilder('program')
       .where(':field = ANY(program.fields)', { field })
       .andWhere('program.degree_type = :type', { type })
       .getMany();
   }
+
+/**
+ * Finds programs based on generalized name and country, limited to 6 results.
+ * 
+ * @param name - The generalized name of the program.
+ * @param country - The country of the university offering the program.
+ * @returns A list of programs matching the generalized name and country.
+ */
+async findByGeneralizedNameAndCountry(
+  name: string, 
+  country: CountryEnum
+): Promise<ProgramMetadata[]> {
+  return await this.programRepository
+    .createQueryBuilder('program')
+    .where('program.generalized_name = :name', { name })
+    .andWhere('program.country = :country', { country })
+    .take(6)
+    .getMany();
+}
 
   /**
    * Creates multiple program metadata records in the database.

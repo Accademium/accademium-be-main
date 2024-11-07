@@ -7,5 +7,5 @@ export default registerAs('aws', () => ({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   clientId: process.env.COGNITO_CLIENT_ID,
   userPoolId: process.env.COGNITO_USER_POOL_ID,
-  bucketName: process.env.AWS_BUCKET_NAME,
+  bucketName: process.env.AWS_S3_BUCKET_NAME,
 }));

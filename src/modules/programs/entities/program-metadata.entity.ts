@@ -1,3 +1,5 @@
+import { Application } from '../../application/entities/application.entity';
+import { CountryEnum } from '../../../utils/enums/country.enum';
 import { UniversityDetails } from '../../university/entities/university-details.entity';
 import {
   Entity,
@@ -7,6 +9,7 @@ import {
   PrimaryColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity('programs_metadata')
@@ -27,12 +30,22 @@ export class ProgramMetadata {
   ])
   university: UniversityDetails;
 
+  @OneToMany(() => Application, application => application.program)
+  applications: Application[];
+
   @Column({ nullable: false })
   university_id: string;
 
   @Column({ nullable: false })
   city: string;
-  
+
+  @Column({ 
+    type: 'enum',
+    enum: CountryEnum,
+    nullable: true 
+  })
+  country: CountryEnum;
+
   @Column()
   degree_type: string;
 

@@ -6,6 +6,11 @@ import { questionAnswers } from '../data/survey-questions.data';
 export class SurveyUtils {
   private readonly logger = new Logger(SurveyUtils.name);
 
+  /**
+   * TODO
+   * @param answers 
+   * @returns 
+   */
   formatSurveyAnswers(answers: Record<number, string>): string {
     const questions = Object.keys(questionAnswers);
 

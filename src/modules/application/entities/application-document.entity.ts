@@ -33,7 +33,7 @@ export class ApplicationDocument {
   approvalStatus: DocumentApprovalStatus;
 
   @Column()
-  documentType: ApplicationDocumentType;
+  applicationDocumentType: ApplicationDocumentType;
 
   @Column({ nullable: true })
   approvedBy: string;

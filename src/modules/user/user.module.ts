@@ -10,6 +10,7 @@ import { UserDocument } from './entities/user-document.entity';
 import { UserDocumentRepository } from './repositories/user.document.repository';
 import { S3Service } from 'src/aws/s3/s3.service';
 import { S3Module } from 'src/aws/s3/s3.module';
+import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { S3Module } from 'src/aws/s3/s3.module';
     UserService, 
     UserRepository,
     UserDocumentService,
-    UserDocumentRepository
+    UserDocumentRepository,
+    ErrorHandlingService
   ],
   exports: [
     UserService, 
