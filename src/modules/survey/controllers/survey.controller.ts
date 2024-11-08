@@ -5,10 +5,14 @@ import { RecommendationResponseDto } from '../dtos/recommendation-response.dto';
 import { UniversityProgramResponseDto } from '../dtos/university-program-response.dto';
 import { SurveyKey } from 'src/utils/interfaces/keys';
 import { JwtGuard } from 'src/authentication/guards/jwt-auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('api/v1/survey/')
 export class SurveyController {
-  constructor(private readonly surveyService: SurveyService) {}
+  constructor(
+    private readonly surveyService: SurveyService,
+    private readonly configService: ConfigService
+  ) {}
 
   @Post(':userId')
   @UseGuards(JwtGuard)
@@ -16,11 +20,14 @@ export class SurveyController {
     @Body() surveyRequest: RecommendationRequestDto,
     @Param('userId') userId: string,
   ): Promise<RecommendationResponseDto> {
-    console.log(surveyRequest);
-    return this.surveyService.processSurveyFieldRecommendations(
-      surveyRequest,
-      userId,
-    );
+    if (this.isTestOrDev()) {
+      return this.surveyService.processSurveyFieldRecommendations(
+        surveyRequest,
+        userId,
+      );
+    } else {
+      return null;
+    }
   }
 
   @Post(':userId/:surveyId/:field')
@@ -31,11 +38,19 @@ export class SurveyController {
     @Param('userId') userId: string,
     //TODO extract userId from the JWT token
   ): Promise<UniversityProgramResponseDto> {
+    if (this.isTestOrDev()) {
+      return this.surveyService.processSurveyProgramRecommendations(
+        surveyId,
+        userId,
+        field,
+      );
+    } else {
+      return null;
+    }
+  }
 
-    return this.surveyService.processSurveyProgramRecommendations(
-      surveyId,
-      userId,
-      field,
-    );
+  private isTestOrDev(): boolean {
+    const nodeEnv = this.configService.get<string>('NODE_ENV');
+    return nodeEnv === 'test' || nodeEnv === 'dev';
   }
 }
