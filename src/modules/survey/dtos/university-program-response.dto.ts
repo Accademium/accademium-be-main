@@ -1,7 +1,7 @@
 import { IsArray, IsString } from 'class-validator';
 import { SurveyKey } from 'src/utils/interfaces/keys';
 
-class ProgramRecommendation {
+export class ProgramRecommendation {
   @IsString()
   study_program: string;
 
@@ -14,10 +14,10 @@ export class UniversityProgramResponseDto {
   surveyId: SurveyKey;
 
   @IsArray()
-  program_recommendations: ProgramRecommendation[];
+  programRecommendations: ProgramRecommendation[];
 
   constructor(data: any, surveyId: SurveyKey) {
     this.surveyId = surveyId;
-    this.program_recommendations = data.program_recommendations;
+    this.programRecommendations = data.programRecommendations;
   }
 }

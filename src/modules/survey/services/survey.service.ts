@@ -2,7 +2,7 @@ import { HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/commo
 import { AIClient } from '../ai/ai.client';
 import { RecommendationRequestDto } from '../dtos/recommendation-request.dto';
 import { Recommendation, RecommendationResponseDto } from '../dtos/recommendation-response.dto';
-import { UniversityProgramResponseDto } from '../dtos/university-program-response.dto';
+import { ProgramRecommendation, UniversityProgramResponseDto } from '../dtos/university-program-response.dto';
 import { SurveyResultRepository } from '../repositories/survey-result.repository';
 import { CustomerAgreement } from 'src/utils/enums/survey.enums';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +14,8 @@ import {
 import { SurveyKey } from 'src/utils/interfaces/keys';
 import { SurveyUtils } from '../utils/survey.utils';
 import { AccademiumException } from 'src/utils/exceptions/accademium.exception';
+import { ConfigService } from '@nestjs/config';
+import { programRecommendations, recommendations } from '../data/test-survey-res.data';
 
 @Injectable()
 export class SurveyService {
@@ -25,6 +27,7 @@ export class SurveyService {
     private readonly surveyResultRepository: SurveyResultRepository,
     private readonly programMetadataService: ProgramMetadataService,
     private readonly surveyUtils: SurveyUtils,
+    private readonly configService: ConfigService
   ) {}
 
   /**
@@ -36,19 +39,13 @@ export class SurveyService {
    */
   async processSurveyFieldRecommendations(
     surveyRequest: RecommendationRequestDto,
-    userId: string,
+    userId: string
   ): Promise<RecommendationResponseDto> {
     const answers = surveyRequest.answers;
-
-    const recommendations =
-      await this.fetchAIFieldRecommendations(answers);
-
-    const studyFields: string[] = this.extractStudyFieldsFromRecommendations(
-      recommendations,
-    );
+    const recommendations = await this.getFieldRecommendations(answers);
 
     const surveyId = await this.saveInitialSurveyAnswers(
-      studyFields,
+      this.extractStudyFieldsFromRecommendations(recommendations),
       userId,
       answers,
     );
@@ -66,16 +63,15 @@ export class SurveyService {
   async processSurveyProgramRecommendations(
     surveyId: SurveyKey,
     userId: string,
-    field: string,
+    field: string
   ): Promise<UniversityProgramResponseDto> {
-    const programRecommendationsDto =
-      await this.fetchAIProgramRecommendations(surveyId, userId, field);
-
-    const programs: string[] = this.extractProgramsFromRecommendations(
-      programRecommendationsDto,
+    const programRecommendationsDto = await this.getUniversityProgramResponse(surveyId, userId, field);
+    this.updateSurvey(
+      field, 
+      surveyId, 
+      this.extractProgramsFromRecommendations(programRecommendationsDto)
     );
 
-    this.updateSurvey(field, surveyId, programs);
     return programRecommendationsDto;
   }
 
@@ -86,13 +82,13 @@ export class SurveyService {
    * @param field 
    * @returns 
    */
-  private async fetchAIProgramRecommendations(
+  private async getAIProgramRecommendations(
     surveyId: SurveyKey,
     userId: string,
     field: string,
   ): Promise<UniversityProgramResponseDto> {
     const formatedAnswers = await this.formatSurveyAnswers(surveyId, userId);
-    const programNamesSet = await this.fetchAndFormatProgramsForField(field);
+    const programNamesSet = await this.getAndFormatProgramsForField(field);
     const response = await this.aiClient.getUniversityProgramRecommendations(
       formatedAnswers,
       Array.from(programNamesSet),
@@ -139,7 +135,6 @@ export class SurveyService {
       field,
       programRecommendations,
     );
-    console.log('updatedResult: ' + JSON.stringify(updatedResult));
 
     this.surveyResultRepository.update(surveyId, updatedResult);
   }
@@ -149,12 +144,28 @@ export class SurveyService {
    * @param answers 
    * @returns 
    */
-  private async fetchAIFieldRecommendations(
+  private async getAIFieldRecommendations(
     answers: Record<number, string>,
   ): Promise<Recommendation[]> {
     const surveyAnswers = this.surveyUtils.formatSurveyAnswers(answers);
     const airesponse = await this.aiClient.getRecommendations(surveyAnswers);
     return airesponse.recommendations;
+  }
+
+  /**
+   * 
+   */
+  private getTestFieldRecommendations(): Recommendation[] {
+    this.logger.log("Returning default test recommendations.")
+    return recommendations;
+  }
+
+  /**
+   * 
+   */
+  private getTestProgramRecommendations(): ProgramRecommendation[] {
+    this.logger.log("Returning default test program recommendations.")
+    return programRecommendations;
   }
 
   /**
@@ -188,7 +199,7 @@ export class SurveyService {
    * @returns {Set<string>}
    * @throws {AccademiumException}
    */
-  private async fetchAndFormatProgramsForField(
+  private async getAndFormatProgramsForField(
     field: string,
   ): Promise<Set<string>> {
     const degreeType = 'bachelor';
@@ -255,8 +266,44 @@ export class SurveyService {
   private extractProgramsFromRecommendations(
     recommendationsDTO: UniversityProgramResponseDto,
   ): string[] {
-    return recommendationsDTO.program_recommendations.map(
+    return recommendationsDTO.programRecommendations.map(
       (recommendation) => recommendation.study_program,
     );
+  }
+
+  private async getFieldRecommendations(
+    answers: Record<string, string>
+  ): Promise<Recommendation[]> {
+    let recommendations: Recommendation[] = null;
+    
+    if (this.isTestOrDev()){
+      recommendations = this.getTestFieldRecommendations();
+    } else {
+      recommendations =
+        await this.getAIFieldRecommendations(answers);
+    }
+
+    return recommendations;
+  }
+
+  async getUniversityProgramResponse(
+    surveyId: SurveyKey, 
+    userId: string, 
+    field: string
+  ): Promise<UniversityProgramResponseDto> {
+    let programRecommendationsDto: UniversityProgramResponseDto = null;
+    if (this.isTestOrDev()){
+      const programRecommendations = this.getTestProgramRecommendations();
+      programRecommendationsDto = { programRecommendations, surveyId }
+    } else {
+      programRecommendationsDto =
+        await this.getAIProgramRecommendations(surveyId, userId, field);
+    } 
+    return programRecommendationsDto;
+  }
+
+  private isTestOrDev(): boolean {
+    const nodeEnv = this.configService.get<string>('NODE_ENV');
+    return nodeEnv === 'test' || nodeEnv === 'dev';
   }
 }
