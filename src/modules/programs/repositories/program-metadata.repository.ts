@@ -78,4 +78,20 @@ async findByGeneralizedNameAndCountry(
   async createMany(programs: CreateProgramMetadataDto[]): Promise<void> {
     await this.programRepository.save(programs);
   }
+
+  /**
+   * 
+   * @param programName 
+   * @returns 
+   */
+  async findCitiesByProgram(generalizedName: string): Promise<string[]> {
+    const qb = this.programRepository
+      .createQueryBuilder('program')
+      .select('DISTINCT program.city', 'program_city')
+      .where('program.generalized_name = :generalizedName', { generalizedName });
+    const queryResult = await qb.getRawMany();
+    
+    return queryResult.map(row => row.program_city);
+  }
+  
 }

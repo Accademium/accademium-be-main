@@ -11,6 +11,7 @@ import {
   AdminRespondToAuthChallengeCommand,
   ChangePasswordCommand,
   AdminListGroupsForUserCommand,
+  AdminConfirmSignUpCommand 
 } from '@aws-sdk/client-cognito-identity-provider';
 import {
   ChangePasswordRequest,
@@ -55,24 +56,30 @@ export class CognitoService {
    * @param registerDto  {@link RegistrationRequest} - An object containing the registration data, including email, password, and organization ID.
    * @throws {AwsException} If the signup process fails.
    */
-  async createStudent(
-    registerDto: RegistrationRequest
-  ) {
+  async createStudent(registerDto: RegistrationRequest) {
     try {
-      return await this.cognitoClient.send(
+      // Sign up the user
+      const signUpResult = await this.cognitoClient.send(
         new SignUpCommand({
           ClientId: this.config.get('aws.clientId'),
           Username: registerDto.email,
           Password: registerDto.password,
           UserAttributes: [
             { Name: 'email', Value: registerDto.email },
-            {
-              Name: 'custom:organisationId',
-              Value: registerDto.organisationId,
-            },
+            { Name: 'custom:organisationId', Value: registerDto.organisationId },
           ],
-        }),
+        })
       );
+  
+      // Automatically confirm the user
+      await this.cognitoClient.send(
+        new AdminConfirmSignUpCommand({
+          UserPoolId: this.config.get('aws.userPoolId'),
+          Username: registerDto.email,
+        })
+      );
+  
+      return signUpResult;
     } catch (error) {
       this.handleCognitoError(
         error,

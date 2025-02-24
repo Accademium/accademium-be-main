@@ -4,13 +4,17 @@ import { CreateCityDTO } from '../dto/create-city.dto';
 import { ICity } from '../interfaces/city.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { AccademiumException } from 'src/utils/exceptions/accademium.exception';
+import { ProgramMetadataService } from 'src/modules/programs/services/program-metadata.service';
 
 @Injectable()
 export class CityService {
   private readonly SERVICE_NAME = 'CityService';
   private readonly logger = new Logger(CityService.name);
 
-  constructor(private readonly cityRepository: CityRepository) {}
+  constructor(
+    private readonly cityRepository: CityRepository,
+    private readonly programMetadataService: ProgramMetadataService
+  ) {}
 
   async createCityList(createCityDTOList: CreateCityDTO[]): Promise<ICity[]> {
     const cityList: ICity[] = createCityDTOList.map((dto) => ({
@@ -35,4 +39,18 @@ export class CityService {
     }
     return city;
   }
+
+  async findCitiesByProgram(program: string): Promise<ICity[]> {
+    const cityNames = await this.programMetadataService.findCitiesByProgram(program);
+    console.log(`extract: ${cityNames}`)
+
+    const cityDetails: ICity[] = await Promise.all(
+      cityNames.map(async (cityName) => {
+        return this.findByName(cityName);
+      })
+    );
+  
+    return cityDetails;
+  }
+  
 }

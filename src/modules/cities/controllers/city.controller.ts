@@ -15,8 +15,17 @@ export class CityController {
     return await this.cityService.createCityList(createCityDTOlist);
   }
 
-  @Get(':name')
-  async findByName(@Param('name') name: string): Promise<ICity> {
-    return await this.cityService.findByName(name);
+  // @Get(':name')
+  // async findByName(@Param('name') name: string): Promise<ICity> {
+  //   return await this.cityService.findByName(name);
+  // }
+
+  @Get(':country/:program/')
+  async findCitiesByProgram(
+    @Param('country') country: string,
+    @Param('program') program: string,
+  ): Promise<ICity[]> {
+    console.log(`Program to search ${program}`)
+    return await this.cityService.findCitiesByProgram(program);
   }
 }

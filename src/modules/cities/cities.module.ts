@@ -5,6 +5,10 @@ import { CityController } from './controllers/city.controller';
 import { CityService } from './services/city.service';
 import { CityRepository } from './repositories/city.repository';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
+import { ProgramMetadataService } from '../programs/services/program-metadata.service';
+import { ProgramMetadataRepository } from '../programs/repositories/program-metadata.repository';
+import { ProgramMetadata } from '../programs/entities/program-metadata.entity';
+import { ProgramsModule } from '../programs/programs.module';
 
 @Module({
   imports: [
@@ -20,12 +24,13 @@ import { ErrorHandlingService } from 'src/utils/services/error-handling.service'
         },
       },
     ]),
+    ProgramsModule
   ],
   controllers: [CityController],
   providers: [
     CityService, 
     CityRepository, 
-    ErrorHandlingService
+    ErrorHandlingService,
   ],
   exports: [CityService],
 })

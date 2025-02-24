@@ -35,14 +35,13 @@ export class AuthenticationController {
    * @returns A success message upon successful registration.
    */
   @Post('register')
-  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.CREATED)
   async registerStudent(
     @Body() registerDto: RegistrationRequest,
-  ): Promise<string> {
-    await this.authService.registerUser(registerDto);
-    // TODO fix return string
-    return 'Student registered successfully. Please check your email for verification.';
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    const user = await this.authService.registerUser(registerDto);
+    await this.authService.loginUser(user, response);
   }
 
 

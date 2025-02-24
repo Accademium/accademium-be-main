@@ -10,7 +10,6 @@ import { UserDocument } from './entities/user-document.entity';
 import { UserDocumentRepository } from './repositories/user.document.repository';
 import { S3Module } from 'src/aws/s3/s3.module';
 import { ErrorHandlingService } from 'src/utils/services/error-handling.service';
-import { RefreshToken } from '../../authentication/entities/user-refresh-token.entity';
 
 @Module({
   imports: [

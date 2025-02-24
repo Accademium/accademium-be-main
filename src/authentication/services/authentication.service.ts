@@ -18,6 +18,7 @@ import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interface';
 import { RefreshTokenService } from './refresh-token.service';
+import { User } from 'src/modules/user/entities/user.entity';
 
 @Injectable()
 export class AuthenticationService {
@@ -33,11 +34,13 @@ export class AuthenticationService {
    * Registers a new student user in the Cognito user pool and assigns them to the "StudentGroup".
    * @param registerDto {@link RegistrationRequest} - The registration data containing user details.
    */
-  async registerUser(registerDto: RegistrationRequest): Promise<void> {
+  async registerUser(registerDto: RegistrationRequest): Promise<UserDto> {
     const cognitoResponse = await this.cognitoService.createStudent(registerDto);
 
     await this.createAccademiumuser(cognitoResponse.UserSub, registerDto);
     await this.addUserToGroup('StudentGroup', registerDto.email)
+    const {email, password} = registerDto;
+    return await this.verifyUser({ email, password });
   }
 
   /**
@@ -211,13 +214,14 @@ export class AuthenticationService {
     this.addUserToGroup(createB2BUser.userGroup, createB2BUser.email)
   }
 
-  private async createAccademiumuser(cognitoId: string, registerDto: RegistrationRequest) {
-    await this.userService.createUser({
+  private async createAccademiumuser(cognitoId: string, registerDto: RegistrationRequest): Promise<UserDto> {
+    const user: User = await this.userService.createUser({
       userId: cognitoId,
       email: registerDto.email,
       first_name: registerDto.firstName,
       last_name: registerDto.lastName,
     });  
+    return null
   }
 
   private async addUserToGroup(userGroup: string, email: string) {

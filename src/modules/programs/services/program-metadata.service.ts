@@ -115,4 +115,21 @@ export class ProgramMetadataService {
       );
     }
   }
+
+  async findCitiesByProgram(
+    program: string
+  ): Promise<string[]> {
+    try {
+      return await this.programRepository.findCitiesByProgram(program);
+    } catch (error) {
+      const message = `There was an error while searching for cities offering ${program}. Error occured in table program_metadata. ` + error.message;
+      this.logger.error(message);
+      throw new AccademiumException(
+        message,
+        AccademiumErrorCode.ITEM_NOT_FOUND,
+        HttpStatus.BAD_REQUEST,
+        this.SERVICE_NAME,
+      );
+    }
+  }
 }

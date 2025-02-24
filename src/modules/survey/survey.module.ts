@@ -22,7 +22,9 @@ import { ErrorHandlingService } from 'src/utils/services/error-handling.service'
     ]),
     ProgramsModule,
   ],
-  controllers: [SurveyController],
+  controllers: [
+    SurveyController
+  ],
   providers: [
     SurveyService,
     AIClient,
